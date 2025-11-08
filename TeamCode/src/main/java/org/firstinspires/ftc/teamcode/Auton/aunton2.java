@@ -1,5 +1,5 @@
 package org.firstinspires.ftc.teamcode.Auton;
-// this code is for the red side starting at the bottom.
+// this code is for the red side starting at the TOP.
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 
@@ -21,14 +21,13 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import java.util.Set;
 
 @Autonomous(name = "Example Auto", group = "Examples")
-        public class aunton extends OpMode {
+public class aunton2 extends OpMode {
     private Follower follower;
     private DcMotor shootingmotor;
     private Timer pathTimer, actionTimer, opmodeTimer, catTimer, dogTimer;
     private int pathState;
 
 
-    private final Pose startPose = new Pose(56, 8, Math.toRadians(90)); // Start Pose of our robot.
 
 
     private final Pose scorePose = new Pose(86, 105, Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
@@ -49,8 +48,6 @@ import java.util.Set;
         /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
 
 
-        scorePreload = new Path(new BezierLine(startPose, scorePose));
-        scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
     /* Here is an example for Constant Interpolation
     scorePreload.setConstantInterpolation(startPose.getHeading()); */
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
@@ -69,43 +66,37 @@ import java.util.Set;
                 .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
                 .build();
         /* This is our scorePickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-                scorePickup2 = follower.pathBuilder()
-                        .addPath(new BezierLine(scorePose, getPickup2begPose))
-                       .setLinearHeadingInterpolation(scorePose.getHeading(),getPickup2begPose .getHeading())
-                       .build();
+        scorePickup2 = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, getPickup2begPose))
+                .setLinearHeadingInterpolation(scorePose.getHeading(),getPickup2begPose .getHeading())
+                .build();
 //                /* This is our grabPickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-              grabPickup2a = follower.pathBuilder()
-                       .addPath(new BezierLine(getPickup2begPose, getGetPickup2Pose))
-                        .setLinearHeadingInterpolation(scorePose.getHeading(), getGetPickup2Pose.getHeading())
-                        .build();
-               /* This is our scorePickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-               scorePickup2b = follower.pathBuilder()
-                       .addPath(new BezierLine(getGetPickup2Pose, scorePose))
-                        .setLinearHeadingInterpolation(getGetPickup2Pose.getHeading(), scorePose.getHeading())
-                        .build();
-               scorePickup3 = follower.pathBuilder()
-                       .addPath(new BezierLine(scorePose, getPickup3begPose))
-                       .setLinearHeadingInterpolation(scorePose.getHeading(), getPickup3begPose.getHeading())
-                       .build();
-               grabPickub3a = follower.pathBuilder()
-                       .addPath(new BezierLine(getPickup3begPose, pickup3pose))
-                       .setLinearHeadingInterpolation(getPickup3begPose.getHeading(), pickup3pose.getHeading())
-                       .build();
-               grabPickup3b = follower.pathBuilder()
-                       .addPath(new BezierLine(pickup3pose, scorePose))
-                       .setLinearHeadingInterpolation(pickup3pose.getHeading(), scorePose.getHeading())
-                       .build();
+        grabPickup2a = follower.pathBuilder()
+                .addPath(new BezierLine(getPickup2begPose, getGetPickup2Pose))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), getGetPickup2Pose.getHeading())
+                .build();
+        /* This is our scorePickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
+        scorePickup2b = follower.pathBuilder()
+                .addPath(new BezierLine(getGetPickup2Pose, scorePose))
+                .setLinearHeadingInterpolation(getGetPickup2Pose.getHeading(), scorePose.getHeading())
+                .build();
+        scorePickup3 = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, getPickup3begPose))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), getPickup3begPose.getHeading())
+                .build();
+        grabPickub3a = follower.pathBuilder()
+                .addPath(new BezierLine(getPickup3begPose, pickup3pose))
+                .setLinearHeadingInterpolation(getPickup3begPose.getHeading(), pickup3pose.getHeading())
+                .build();
+        grabPickup3b = follower.pathBuilder()
+                .addPath(new BezierLine(pickup3pose, scorePose))
+                .setLinearHeadingInterpolation(pickup3pose.getHeading(), scorePose.getHeading())
+                .build();
 
     }
 
     public void autonomousPathUpdate() {
         switch (pathState) {
-            case 0: {
-                follower.followPath(scorePreload);
-                setPathState(1);
-                dogTimer.resetTimer();
-                break;
-            }
             case 1: {
             /* You could check for
             - Follower State: "if(!follower.isBusy()) {}"
@@ -121,7 +112,7 @@ import java.util.Set;
                     dogTimer.resetTimer();
                 }
             }
-                break;
+            break;
             case 2: {
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
                 if (!follower.isBusy()) {
@@ -132,7 +123,7 @@ import java.util.Set;
                     dogTimer.resetTimer();
                 }
             }
-                break;
+            break;
             case 3:
             {
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
@@ -144,8 +135,8 @@ import java.util.Set;
                     setPathState(4);
 
                 }
-                }
-                break;
+            }
+            break;
             case 4: {
 
                 if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
@@ -155,7 +146,7 @@ import java.util.Set;
                     dogTimer.resetTimer();
                 }
             }
-                break;
+            break;
 
             case 5: {
                 if (!follower.isBusy()) {
@@ -164,7 +155,7 @@ import java.util.Set;
                     dogTimer.resetTimer();
                 }
             }
-                break;
+            break;
 
             case 6: {
                 if (!follower.isBusy()) {
@@ -184,7 +175,7 @@ import java.util.Set;
                     dogTimer.resetTimer();
                 }
             }
-                break;
+            break;
 
             case 8: {
                 if (!follower.isBusy()) {
@@ -193,7 +184,7 @@ import java.util.Set;
                     dogTimer.resetTimer();
                 }
             }
-                break;
+            break;
 
             case 9: {
                 if (!follower.isBusy()) {
@@ -202,7 +193,7 @@ import java.util.Set;
                     setPathState(10);
                 }
             }
-                break;
+            break;
 //                    case 4:
 //                        /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup2Pose's position */
 //                        if(!follower.isBusy()) {
@@ -277,7 +268,7 @@ import java.util.Set;
         opmodeTimer.resetTimer();
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
-        follower.setStartingPose(startPose);
+        follower.setStartingPose(scorePose);
         shootingmotor = hardwareMap.get(DcMotor.class, "shootingmotor");
 
     }
@@ -296,11 +287,12 @@ import java.util.Set;
     @Override
     public void start() {
         opmodeTimer.resetTimer();
-        setPathState(0);
-        }
-        /** We do not use this because everything should automatically disable **/
-
+        setPathState(1);
     }
+    /** We do not use this because everything should automatically disable **/
+
+}
+
 
 
 
