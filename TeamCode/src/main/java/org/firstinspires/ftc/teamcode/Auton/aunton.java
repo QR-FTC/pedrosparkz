@@ -11,16 +11,25 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous(name = "Example Auto", group = "Examples")
         public class aunton extends OpMode {
             private Follower follower;
+            private DcMotor Dcmotor;
             private Timer pathTimer, actionTimer, opmodeTimer;
             private int pathState;
             private final Pose startPose = new Pose(56, 8, Math.toRadians(90)); // Start Pose of our robot.
-    private final Pose startPose2 = new Pose(24, 120, Math.toRadians(135));
+
+
+    private final Pose ifstartPosetoptri = new Pose(24, 120, Math.toRadians(135));
+    private final Pose pointsforauto3 = new Pose(35, 108, Math.toRadians(135));
+
+
             private final Pose scorePose = new Pose(60, 85, Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
             private final Pose pickup1Pose = new Pose(37, 121, Math.toRadians(0)); // Highest (First Set) of Artifacts from the Spike Mark.
             private final Pose pickup2Pose = new Pose(43, 130, Math.toRadians(0)); // Middle (Second Set) of Artifacts from the Spike Mark.
@@ -40,8 +49,8 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
                         .build();
                 /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
                 scorePickup1 = follower.pathBuilder()
-                        .addPath(new BezierLine(pickup1Pose, scorePose))
-                        .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
+                        .addPath(new BezierLine(ifstartPosetoptri, pointsforauto3))
+                        .setLinearHeadingInterpolation(ifstartPosetoptri.getHeading(), pointsforauto3.getHeading())
                         .build();
                 /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
                 grabPickup2 = follower.pathBuilder()
@@ -172,6 +181,8 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
             public void start() {
                 opmodeTimer.resetTimer();
                 setPathState(0);
+
+
             }
             /** We do not use this because everything should automatically disable **/
             @Override
