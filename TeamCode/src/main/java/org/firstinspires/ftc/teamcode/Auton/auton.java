@@ -20,7 +20,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.Set;
 
-@Autonomous(name = "Example Auto farblue", group = "Examples")
+@Autonomous(name = "Example Auto farred", group = "Examples")
 public class auton extends OpMode {
     private Follower follower;
     private DcMotor shootingmotor;
@@ -30,15 +30,15 @@ public class auton extends OpMode {
 
 
 
-private final Pose startPose = new Pose(56,8, Math.toRadians(90));
-    private final Pose scorePose = new Pose(56, 105, Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose pickup1Posebeg = new Pose(44, 84, Math.toRadians(180)); // Highest (First Set) of Artifacts from the Spike Mark.
-    private final Pose pickup1Pose = new Pose(19, 84, Math.toRadians(180)); // Middle (Second Set) of Artifacts from the Spike Mark.
-    private final Pose getPickup2begPose = new Pose(44, 60, Math.toRadians(180));
-    private final Pose getGetPickup2Pose = new Pose(15, 60, Math.toRadians(180));
+private final Pose startPose = new Pose(87,8, Math.toRadians(90));
+    private final Pose scorePose = new Pose(86, 105, Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose pickup1Posebeg = new Pose(100, 83, Math.toRadians(180)); // Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup1Pose = new Pose(127, 83, Math.toRadians(180)); // Middle (Second Set) of Artifacts from the Spike Mark.
+    private final Pose getPickup2begPose = new Pose(103, 60, Math.toRadians(180));
+    private final Pose getGetPickup2Pose = new Pose(127, 60, Math.toRadians(180));
 
-    private final Pose getPickup3begPose = new Pose(44, 36, Math.toRadians(180));
-    private final Pose pickup3pose = new Pose(56, 105, Math.toRadians(180));
+    private final Pose getPickup3begPose = new Pose(103, 35, Math.toRadians(180));
+    private final Pose pickup3pose = new Pose(127, 35, Math.toRadians(180));
 
 
   Path scorePreload;

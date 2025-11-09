@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.Set;
 
-@Autonomous(name = "Example Auto farred", group = "Examples")
+@Autonomous(name = "Example Auto farblue", group = "Examples")
         public class aunton extends OpMode {
     private Follower follower;
     private DcMotor shootingmotor;
@@ -35,7 +35,7 @@ import java.util.Set;
 
 
 
-    private final Pose scorePose = new Pose(86, 105, Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose scorePose = new Pose(86, 105, Math.toRadians(45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     private final Pose pickup1Posebeg = new Pose(100, 83, Math.toRadians(0)); // Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup1Pose = new Pose(127, 83, Math.toRadians(0)); // Middle (Second Set) of Artifacts from the Spike Mark.
     private final Pose getPickup2begPose = new Pose(103, 60, Math.toRadians(0));
