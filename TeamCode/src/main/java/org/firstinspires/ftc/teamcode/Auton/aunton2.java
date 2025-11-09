@@ -10,6 +10,7 @@ import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -20,7 +21,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.Set;
-
+@Disabled
 @Autonomous(name = "Example Auto closeblue", group = "Examples")
 public class aunton2 extends OpMode {
     private Follower follower;
@@ -348,6 +349,7 @@ public class aunton2 extends OpMode {
     /**
      * This method is called continuously after Init while waiting for "play".
      **/
+
     @Override
     public void init_loop() {
     }

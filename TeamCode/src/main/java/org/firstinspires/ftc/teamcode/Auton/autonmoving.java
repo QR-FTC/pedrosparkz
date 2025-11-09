@@ -42,16 +42,17 @@ public class autonmoving extends OpMode {
     private final Pose pickup1Posebeg = new Pose(58, 12, Math.toRadians(90)); // Highest (First Set) of Artifacts from the Spike Mark.
 
 
-    private Path scorePreload;
 
-    PathChain grabPickup1, scorePickup1a, grabPickup1b, scorePickup2,grabPickup2a,scorePickup2b,scorePickup3, grabPickub3a, grabPickup3b;
-
+    PathChain scorePreload;
     public void buildPaths() {
         /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
 
 
-        scorePreload = new Path(new BezierLine(startPose, pickup1Posebeg));
-        scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), pickup1Posebeg.getHeading());
+        scorePreload = follower.pathBuilder()
+                .addPath(new BezierLine(startPose, pickup1Posebeg))
+                .build();
+
+//        scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), pickup1Posebeg.getHeading());
     /* Here is an example for Constant Interpolation
     scorePreload.setConstantInterpolation(startPose.getHeading()); */
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
@@ -102,12 +103,12 @@ public class autonmoving extends OpMode {
         dogTimer = new Timer();
         opmodeTimer.resetTimer();
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(startPose);
         buildPaths();
-        shootingmotor = hardwareMap.get(DcMotor.class, "Deposit");
-        intakeservo = hardwareMap.get(CRServo.class, "Servo_Deposit");
-        intake_2 = hardwareMap.get(DcMotor.class, "Intake_2");
-        intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
+        follower.setStartingPose(startPose);
+//        shootingmotor = hardwareMap.get(DcMotor.class, "Deposit");
+//        intakeservo = hardwareMap.get(CRServo.class, "Servo_Deposit");
+//        intake_2 = hardwareMap.get(DcMotor.class, "Intake_2");
+//        intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
 
     }
 

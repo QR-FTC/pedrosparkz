@@ -72,16 +72,24 @@ public class teleopV2 extends OpMode {
             intake_2.setPower(-gamepad1.right_trigger);
             intake_3.setPower(gamepad1.right_trigger);
         }
-        if(gamepad1.left_trigger>0.1){
+        else if(gamepad1.left_trigger>0.1){
             intake_2.setPower(gamepad1.left_trigger);
             intake_3.setPower(-gamepad1.left_trigger);
         }
-        geckoWheels.setPower(gamepad2.right_trigger);
+        else {
+            intake_2.setPower(0.0);
+            intake_3.setPower(0.0);
+
+        }
         if(gamepad2.right_trigger>0.1) {
             geckoWheels.setPower(gamepad2.right_trigger);
         }
-        if (gamepad2.left_trigger>0.1){
+       else if (gamepad2.left_trigger>0.1){
             geckoWheels.setPower(-gamepad2.left_trigger);
+        }
+        else {
+            geckoWheels.setPower(0.0);
+
         }
 
 
