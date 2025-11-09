@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.Set;
 
-@Autonomous(name = "Example Auto redside:)", group = "Examples")
+@Autonomous(name = "Example Auto blueside:)", group = "Examples")
 public class rautonmoving extends OpMode {
 
     private Follower follower;
@@ -39,7 +39,7 @@ public class rautonmoving extends OpMode {
 
 
     //    private final Pose scorePose = new Pose(86, 105, Math.toRadians(45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose pickup1Posebeg = new Pose(90, 16, Math.toRadians(90)); // Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup1Posebeg = new Pose(86, 12, Math.toRadians(90)); // Highest (First Set) of Artifacts from the Spike Mark.
 
 
     private Path scorePreload;
