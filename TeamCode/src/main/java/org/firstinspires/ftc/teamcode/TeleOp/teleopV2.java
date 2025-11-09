@@ -68,10 +68,21 @@ public class teleopV2 extends OpMode {
     @Override
     public void loop() {
         //Call this once per loop
-
-        intake_2.setPower(-gamepad1.right_trigger);
-        intake_3.setPower(gamepad1.right_trigger);
-        geckoWheels.setPower(gamepad2.left_trigger);
+        if(gamepad1.right_trigger>0.1){
+            intake_2.setPower(-gamepad1.right_trigger);
+            intake_3.setPower(gamepad1.right_trigger);
+        }
+        if(gamepad1.left_trigger>0.1){
+            intake_2.setPower(gamepad1.left_trigger);
+            intake_3.setPower(-gamepad1.left_trigger);
+        }
+        geckoWheels.setPower(gamepad2.right_trigger);
+        if(gamepad2.right_trigger>0.1) {
+            geckoWheels.setPower(gamepad2.right_trigger);
+        }
+        if (gamepad2.left_trigger>0.1){
+            geckoWheels.setPower(-gamepad2.left_trigger);
+        }
 
 
         if (gamepad2.dpad_up){
@@ -94,38 +105,12 @@ public class teleopV2 extends OpMode {
                     -gamepad1.left_stick_y,
                     -gamepad1.left_stick_x,
                     -gamepad1.right_stick_x,
-                    true // Robot Centric
+                    false // Robot Centric
             );
-                //This is how it looks with slowMode on
-            else follower.setTeleOpDrive(
-                    -gamepad1.left_stick_y * slowModeMultiplier,
-                    -gamepad1.left_stick_x * slowModeMultiplier,
-                    -gamepad1.right_stick_x * slowModeMultiplier,
-                    true // Robot Centric
-            );
+            //This is how it looks with slowMode on
         }
-        //Automated PathFollowing
-        if (gamepad1.aWasPressed()) {
-            follower.followPath(pathChain.get());
-            automatedDrive = true;
-        }
-        //Stop automated following if the follower is done
-        if (automatedDrive && (gamepad1.bWasPressed() || !follower.isBusy())) {
-            follower.startTeleopDrive();
-            automatedDrive = false;
-        }
-        //Slow Mode
-        if (gamepad1.rightBumperWasPressed()) {
-            slowMode = !slowMode;
-        }
-        //Optional way to change slow mode strength
-        if (gamepad1.xWasPressed()) {
-            slowModeMultiplier += 0.25;
-        }
-        //Optional way to change slow mode strength
-        if (gamepad2.yWasPressed()) {
-            slowModeMultiplier -= 0.25;
-        }
+
+
         telemetryM.debug("position", follower.getPose());
         telemetryM.debug("velocity", follower.getVelocity());
         telemetryM.debug("automatedDrive", automatedDrive);
