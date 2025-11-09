@@ -23,10 +23,13 @@ import java.util.Set;
 
 @Autonomous(name = "Example Auto farblue", group = "Examples")
         public class aunton extends OpMode {
+
     private Follower follower;
     private DcMotor shootingmotor;
     private Timer pathTimer, actionTimer, opmodeTimer, catTimer, dogTimer;
     private int pathState;
+    private DcMotor intake_2;
+    private DcMotor intake_3;
 
     public CRServo intakeservo;
 
@@ -103,10 +106,13 @@ import java.util.Set;
     }
 
     public void autonomousPathUpdate() {
+        dogTimer.resetTimer();
         switch (pathState) {
             case 0: {
                 follower.followPath(scorePreload);
                 setPathState(1);
+                intake_2.setPower(-1);
+                intake_3.setPower(1);
                 intakeservo.setPower(-1);
                 shootingmotor.setPower(1);
                 break;
@@ -122,6 +128,8 @@ import java.util.Set;
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(grabPickup1, true);
+                    intake_2.setPower(0);
+                    intake_3.setPower(0);
                     shootingmotor.setPower(0);
                     intakeservo.setPower(0);
                     setPathState(2);
@@ -136,6 +144,8 @@ import java.util.Set;
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
                     follower.followPath(scorePickup1a, true);
                     setPathState(3);
+                    intake_2.setPower(-1);
+                    intake_3.setPower(1);
                     dogTimer.resetTimer();
                 }
             }
@@ -143,10 +153,12 @@ import java.util.Set;
             case 3:
             {
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
-                if (!follower.isBusy()) {
+                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
                     /* Score Sample */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(grabPickup1b, true);
+                    intake_3.setPower(0);
+                    intake_2.setPower(0);
                     shootingmotor.setPower(1);
                     setPathState(4);
 
@@ -287,6 +299,8 @@ import java.util.Set;
         follower.setStartingPose(startPose);
         shootingmotor = hardwareMap.get(DcMotor.class, "Deposit");
         intakeservo = hardwareMap.get(CRServo.class, "Servo_Deposit");
+        intake_2 = hardwareMap.get(DcMotor.class, "intake_2");
+        intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
 
     }
 
