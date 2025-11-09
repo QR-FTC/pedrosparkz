@@ -39,7 +39,7 @@ public class autonmoving extends OpMode {
 
 
     //    private final Pose scorePose = new Pose(86, 105, Math.toRadians(45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose pickup1Posebeg = new Pose(50, 16, Math.toRadians(90)); // Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup1Posebeg = new Pose(54, 16, Math.toRadians(90)); // Highest (First Set) of Artifacts from the Spike Mark.
 
 
     private Path scorePreload;
