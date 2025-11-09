@@ -69,8 +69,8 @@ public class teleopV2 extends OpMode {
     public void loop() {
         //Call this once per loop
 
-        intake_2.setPower(-gamepad2.right_trigger);
-        intake_3.setPower(gamepad2.right_trigger);
+        intake_2.setPower(-gamepad1.right_trigger);
+        intake_3.setPower(gamepad1.right_trigger);
         geckoWheels.setPower(gamepad2.left_trigger);
 
 
