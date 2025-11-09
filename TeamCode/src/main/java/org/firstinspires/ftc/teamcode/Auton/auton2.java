@@ -11,6 +11,7 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -23,14 +24,17 @@ import java.util.Set;
 @Autonomous(name = "Example Auto closered", group = "Examples")
 public class auton2 extends OpMode {
     private Follower follower;
-    private DcMotor shootingmotor;
+    private DcMotor geckoWheels;
+    private DcMotor intake_2;
+    private DcMotor intake_3;
+    private CRServo intakeservo;
     private Timer pathTimer, actionTimer, opmodeTimer, dogTimer, catTimer;
     private int pathState;
 
 
 
-
-    private final Pose scorePose = new Pose(56, 105, Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose scorePose = new Pose(86, 96, Math.toRadians(45)); //right front wheel will be on this point, and it will go along the line of y=x.
+//    private final Pose scorePose = new Pose(96, 96, Math.toRadians(135)); //  wheel will be on this point, turned at the 135 deg angle.
     private final Pose pickup1Posebeg = new Pose(44, 84, Math.toRadians(180)); // Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup1Pose = new Pose(19, 84, Math.toRadians(180)); // Middle (Second Set) of Artifacts from the Spike Mark.
     private final Pose getPickup2begPose = new Pose(44, 60, Math.toRadians(180));
@@ -40,10 +44,11 @@ public class auton2 extends OpMode {
     private final Pose pickup3pose = new Pose(56, 105, Math.toRadians(180));
 
 
-    Path scorePreload;
 
 
-    PathChain  grabPickup1, scorePickup1a, grabPickup1b, scorePickup2, scorePickup2a, scorePickup2b, scorePickup3, scorePickup3a, scorePickup3b;
+
+
+    PathChain  scorePreload, grabPickup1, scorePickup1a, grabPickup1b, scorePickup2, scorePickup2a, scorePickup2b, scorePickup3, scorePickup3a, scorePickup3b;
 
     public void buildPaths() {
         /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
@@ -53,6 +58,10 @@ public class auton2 extends OpMode {
     /* Here is an example for Constant Interpolation
     scorePreload.setConstantInterpolation(startPose.getHeading()); */
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
+        scorePreload = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, scorePose))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), scorePose.getHeading())
+                .build();
         grabPickup1 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, pickup1Posebeg))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup1Posebeg.getHeading())
@@ -116,8 +125,12 @@ public class auton2 extends OpMode {
 
 
             case 0: {
-                if (!follower.isBusy()) {
+                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
                     follower.followPath(grabPickup1);
+                    intakeservo.setPower(0);
+                    intake_2.setPower(0);
+                    intake_3.setPower(0);
+                    geckoWheels.setPower(0);
                     setPathState(1);
                     dogTimer.resetTimer();
                 }
@@ -131,11 +144,15 @@ public class auton2 extends OpMode {
             */
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if (!follower.isBusy()) {
+                    dogTimer.resetTimer();
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(scorePickup1a, true);
+                    intakeservo.setPower(0);
+                    intake_2.setPower(-1);
+                    intake_3.setPower(1);
+                    geckoWheels.setPower(0);
                     setPathState(2);
-                    dogTimer.resetTimer();
                 }
             }
             break;
@@ -147,8 +164,11 @@ public class auton2 extends OpMode {
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
 
                     follower.followPath(grabPickup1b, true);
+                    intakeservo.setPower(-1);
+                    geckoWheels.setPower(1);
+                    intake_3.setPower(1);
+                    intake_2.setPower(-1);
                     setPathState(3);
-                    shootingmotor.setPower(1);
 
                 }
             }
@@ -158,7 +178,10 @@ public class auton2 extends OpMode {
                 if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
                     follower.followPath(scorePickup2);
                     setPathState(4);
-                    shootingmotor.setPower(0);
+                    geckoWheels.setPower(0);
+                    intake_3.setPower(0);
+                    intake_2.setPower(0);
+                    intakeservo.setPower(0);
                     dogTimer.resetTimer();
                 }
             }
@@ -166,16 +189,22 @@ public class auton2 extends OpMode {
             case 4: {
                 if (!follower.isBusy()) {
                     follower.followPath((scorePickup2a));
+                    intake_3.setPower(1);
+                    intake_2.setPower(-1);
                     setPathState(5);
                     dogTimer.resetTimer();
                 }
             }
+            break;
 
             case 5: {
                 if (!follower.isBusy()) {
                     follower.followPath(scorePickup2b);
                     setPathState(6);
-                    shootingmotor.setPower(1);
+                    geckoWheels.setPower(1);
+                    intake_3.setPower(1);
+                    intake_2.setPower(-1);
+                    intakeservo.setPower(-1);
                 }
             }
             break;
@@ -184,7 +213,10 @@ public class auton2 extends OpMode {
                 if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
                     follower.followPath(scorePickup3);
                     setPathState(7);
-                    shootingmotor.setPower(0);
+                    geckoWheels.setPower(0);
+                    intake_3.setPower(0);
+                    intake_3.setPower(0);
+                    intakeservo.setPower(0);
                     dogTimer.resetTimer();
                 }
             }
@@ -193,6 +225,8 @@ public class auton2 extends OpMode {
             case 7: {
                 if (!follower.isBusy()) {
                     follower.followPath(scorePickup3a);
+                    intake_2.setPower(-1);
+                    intake_3.setPower(1);
                     setPathState(8);
                     dogTimer.resetTimer();
                 }
@@ -202,8 +236,12 @@ public class auton2 extends OpMode {
             case 8: {
                 if (!follower.isBusy()) {
                     follower.followPath(scorePickup3b);
+                    intake_2.setPower(-1);
+                    intake_3.setPower(1);
+                    intakeservo.setPower(-1);
                     setPathState(9);
-                    shootingmotor.setPower(1);
+                    geckoWheels.setPower(1);
+                    dogTimer.resetTimer();
                 }
             }
             break;
@@ -211,7 +249,11 @@ public class auton2 extends OpMode {
             case 9: {
                 if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
                     setPathState(-1);
-                    shootingmotor.setPower(0);
+                    geckoWheels.setPower(0);
+                    intakeservo.setPower(0);
+                    intake_2.setPower(0);
+                    intake_3.setPower(0);
+                    dogTimer.resetTimer();
 
                 }
             }
@@ -257,9 +299,26 @@ public class auton2 extends OpMode {
 
     @Override
     public void loop() {
-        // These loop the movements of the robot, these must be called continuously in order to work
-        follower.update();
-        autonomousPathUpdate();
+        boolean initialRunDone = false;
+        if (!initialRunDone) {
+            if (opmodeTimer.getElapsedTimeSeconds() < 8.0) {
+                intakeservo.setPower(-1);
+                intake_2.setPower(-1);
+                intake_3.setPower(1);
+                geckoWheels.setPower(1);
+            } else {
+                // Stop motors after 8 seconds and mark as done
+                intakeservo.setPower(0);
+                intake_2.setPower(0);
+                intake_3.setPower(0);
+                geckoWheels.setPower(0);
+                initialRunDone = true; // only happens once
+            }
+        } else {
+            // After initial run, update follower and paths
+            follower.update();
+            autonomousPathUpdate();
+        }
         // Feedback to Driver Hub for debugging
         telemetry.addData("path state", pathState);
         telemetry.addData("x", follower.getPose().getX());
@@ -282,7 +341,11 @@ public class auton2 extends OpMode {
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
         follower.setStartingPose(scorePose);
-        shootingmotor = hardwareMap.get(DcMotor.class, "shootingmotor");
+        geckoWheels = hardwareMap.get(DcMotor.class, "Deposit");
+        intake_2 = hardwareMap.get(DcMotor.class, "Intake_2");
+        intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
+        intakeservo = hardwareMap.get(CRServo.class, "Servo_Deposit");
+
 
     }
 
@@ -300,7 +363,20 @@ public class auton2 extends OpMode {
     @Override
     public void start() {
         opmodeTimer.resetTimer();
-        setPathState(0);
+        dogTimer.resetTimer();
+        intakeservo.setPower(-1);
+        intake_2.setPower(-1);
+        intake_3.setPower(1);
+        geckoWheels.setPower(1);
+        if (dogTimer.getElapsedTimeSeconds() > 8.00) {
+            intakeservo.setPower(0);
+            intake_2.setPower(0);
+            intake_3.setPower(0);
+            geckoWheels.setPower(0);
+            setPathState(0);
+        }
+
+        setPathState(14);
 //        setPathState(0);
 //        setPathState(1);
 //        setPathState(2);

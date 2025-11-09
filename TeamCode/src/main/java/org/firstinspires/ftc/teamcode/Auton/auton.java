@@ -11,6 +11,7 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -23,15 +24,20 @@ import java.util.Set;
 @Autonomous(name = "Example Auto farred", group = "Examples")
 public class auton extends OpMode {
     private Follower follower;
-    private DcMotor shootingmotor;
+    private DcMotor geckoWheels;
+
+    private CRServo intakeservo;
+    private DcMotor intake_2;
+    private DcMotor intake_3;
     private Timer pathTimer, actionTimer, opmodeTimer, dogTimer, catTimer;
     private int pathState;
 
 
 
 
-private final Pose startPose = new Pose(87,8, Math.toRadians(90));
-    private final Pose scorePose = new Pose(86, 105, Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+private final Pose startPose = new Pose(88,8, Math.toRadians(90)); // the robot is set so that the right set of wheels will be along the beginning of the fifth tile of x's line.
+    private final Pose scorePose = new Pose(86, 96, Math.toRadians(45)); // rightfront wheel will be on this point, will be along y=x line.
+//    private final Pose scorePose = new Pose(86, 105, Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     private final Pose pickup1Posebeg = new Pose(100, 83, Math.toRadians(180)); // Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup1Pose = new Pose(127, 83, Math.toRadians(180)); // Middle (Second Set) of Artifacts from the Spike Mark.
     private final Pose getPickup2begPose = new Pose(103, 60, Math.toRadians(180));
@@ -41,16 +47,18 @@ private final Pose startPose = new Pose(87,8, Math.toRadians(90));
     private final Pose pickup3pose = new Pose(127, 35, Math.toRadians(180));
 
 
-  Path scorePreload;
 
 
-   PathChain  grabPickup1, scorePickup1a, grabPickup1b, scorePickup2, scorePickup2a, scorePickup2b, scorePickup3, scorePickup3a, scorePickup3b;
+
+   PathChain scorePreload, grabPickup1, scorePickup1a, grabPickup1b, scorePickup2, scorePickup2a, scorePickup2b, scorePickup3, scorePickup3a, scorePickup3b;
 
     public void buildPaths() {
         /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
 
-
-
+        scorePreload = follower.pathBuilder()
+        .addPath(new BezierLine(startPose, scorePose))
+        .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
+        .build();
     /* Here is an example for Constant Interpolation
     scorePreload.setConstantInterpolation(startPose.getHeading()); */
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
@@ -112,9 +120,16 @@ private final Pose startPose = new Pose(87,8, Math.toRadians(90));
     }
 
     public void autonomousPathUpdate() {
+
+
         switch (pathState) {
             case 10: {
                 follower.followPath(scorePreload);
+                // this is going from beg --> scoring
+                intake_3.setPower(1);
+                intake_2.setPower(-1);
+                geckoWheels.setPower(1);
+                intakeservo.setPower(-1);
                 setPathState(0);
                 dogTimer.resetTimer();
             }
@@ -123,8 +138,12 @@ private final Pose startPose = new Pose(87,8, Math.toRadians(90));
 
 
             case 0: {
-                if (!follower.isBusy()) {
+                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 8.00) {
                     follower.followPath(grabPickup1);
+                    intakeservo.setPower(0);
+                    intake_3.setPower(0);
+                    intake_2.setPower(0);
+                    geckoWheels.setPower(0);
                     setPathState(1);
                     dogTimer.resetTimer();
                 }
@@ -141,7 +160,9 @@ private final Pose startPose = new Pose(87,8, Math.toRadians(90));
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(scorePickup1a, true);
-                    setPathState(2);
+                    intake_2.setPower(-1);
+                    intake_3.setPower(1);
+                    setPathState(1);
                     dogTimer.resetTimer();
                 }
             }
@@ -155,8 +176,13 @@ private final Pose startPose = new Pose(87,8, Math.toRadians(90));
 
                     follower.followPath(grabPickup1b, true);
 //                    setPathState(3);
-                    setPathState(-1);
-                    shootingmotor.setPower(1);
+                    intake_2.setPower(-1);
+                    intake_3.setPower(1);
+                    intakeservo.setPower(-1);
+                    geckoWheels.setPower(1);
+                    setPathState(9);
+                    dogTimer.resetTimer();
+
 
                 }
             }
@@ -219,7 +245,10 @@ private final Pose startPose = new Pose(87,8, Math.toRadians(90));
             case 9: {
                 if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
                     setPathState(-1);
-                    shootingmotor.setPower(0);
+                    geckoWheels.setPower(0);
+                    intakeservo.setPower(0);
+                    intake_3.setPower(0);
+                    intake_2.setPower(0);
 
                 }
             }
@@ -262,9 +291,12 @@ private final Pose startPose = new Pose(87,8, Math.toRadians(90));
         actionTimer = new Timer();
         opmodeTimer.resetTimer();
         follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(startPose);
         buildPaths();
-        follower.setStartingPose(scorePose);
-        shootingmotor = hardwareMap.get(DcMotor.class, "shootingmotor");
+        geckoWheels = hardwareMap.get(DcMotor.class, "Deposit");
+        intake_2 = hardwareMap.get(DcMotor.class, "Intake_2");
+        intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
+        intakeservo = hardwareMap.get(CRServo.class, "Servo_Deposit");
 
     }
 

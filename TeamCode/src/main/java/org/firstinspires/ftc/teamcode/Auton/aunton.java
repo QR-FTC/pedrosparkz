@@ -34,11 +34,11 @@ import java.util.Set;
     public CRServo intakeservo;
 
 
-    private final Pose startPose = new Pose(56, 8, Math.toRadians(90)); // Start Pose of our robot.
+    private final Pose startPose = new Pose(56, 8, Math.toRadians(90)); // the robot will be set where the left wheels are along the lines of the beginning of the third tile of x.
 
 
-
-    private final Pose scorePose = new Pose(86, 105, Math.toRadians(45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose scorePose = new Pose(58, 96, Math.toRadians(135)); // left front wheel will be on this point; and its on the 2nd tile in x and fourth tile in y along y=-x.
+//    private final Pose scorePose = new Pose(86, 105, Math.toRadians(45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     private final Pose pickup1Posebeg = new Pose(100, 83, Math.toRadians(0)); // Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup1Pose = new Pose(127, 83, Math.toRadians(0)); // Middle (Second Set) of Artifacts from the Spike Mark.
     private final Pose getPickup2begPose = new Pose(103, 60, Math.toRadians(0));
@@ -106,7 +106,6 @@ import java.util.Set;
     }
 
     public void autonomousPathUpdate() {
-        dogTimer.resetTimer();
         switch (pathState) {
             case 0: {
                 follower.followPath(scorePreload);
@@ -115,6 +114,7 @@ import java.util.Set;
                 intake_3.setPower(1);
                 intakeservo.setPower(-1);
                 shootingmotor.setPower(1);
+                dogTimer.resetTimer();
                 break;
             }
             case 1: {
@@ -157,9 +157,10 @@ import java.util.Set;
                     /* Score Sample */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(grabPickup1b, true);
-                    intake_3.setPower(0);
-                    intake_2.setPower(0);
+                    intake_3.setPower(-1);
+                    intake_2.setPower(1);
                     shootingmotor.setPower(1);
+                    intakeservo.setPower(-1);
                     setPathState(4);
 
                 }
@@ -295,11 +296,11 @@ import java.util.Set;
         dogTimer = new Timer();
         opmodeTimer.resetTimer();
         follower = Constants.createFollower(hardwareMap);
-        buildPaths();
         follower.setStartingPose(startPose);
+        buildPaths();
         shootingmotor = hardwareMap.get(DcMotor.class, "Deposit");
         intakeservo = hardwareMap.get(CRServo.class, "Servo_Deposit");
-        intake_2 = hardwareMap.get(DcMotor.class, "intake_2");
+        intake_2 = hardwareMap.get(DcMotor.class, "Intake_2");
         intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
 
     }
