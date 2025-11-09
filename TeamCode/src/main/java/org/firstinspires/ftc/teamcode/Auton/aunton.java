@@ -11,6 +11,7 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -20,15 +21,18 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.Set;
 
-@Autonomous(name = "Example Auto", group = "Examples")
+@Autonomous(name = "Example Auto farred", group = "Examples")
         public class aunton extends OpMode {
     private Follower follower;
     private DcMotor shootingmotor;
     private Timer pathTimer, actionTimer, opmodeTimer, catTimer, dogTimer;
     private int pathState;
 
+    public CRServo intakeservo;
+
 
     private final Pose startPose = new Pose(56, 8, Math.toRadians(90)); // Start Pose of our robot.
+
 
 
     private final Pose scorePose = new Pose(86, 105, Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
@@ -103,7 +107,8 @@ import java.util.Set;
             case 0: {
                 follower.followPath(scorePreload);
                 setPathState(1);
-                dogTimer.resetTimer();
+                intakeservo.setPower(-1);
+                shootingmotor.setPower(1);
                 break;
             }
             case 1: {
@@ -113,10 +118,12 @@ import java.util.Set;
             - Robot Position: "if(follower.getPose().getX() > 36) {}"
             */
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
-                if (!follower.isBusy()) {
+                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 8.00) {
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(grabPickup1, true);
+                    shootingmotor.setPower(0);
+                    intakeservo.setPower(0);
                     setPathState(2);
                     dogTimer.resetTimer();
                 }
@@ -146,63 +153,63 @@ import java.util.Set;
                 }
                 }
                 break;
-            case 4: {
-
-                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
-                    follower.followPath(scorePickup2, true);
-                    setPathState(5);
-                    shootingmotor.setPower(0);
-                    dogTimer.resetTimer();
-                }
-            }
-                break;
-
-            case 5: {
-                if (!follower.isBusy()) {
-                    follower.followPath(grabPickup2a, true);
-                    setPathState(6);
-                    dogTimer.resetTimer();
-                }
-            }
-                break;
-
-            case 6: {
-                if (!follower.isBusy()) {
-                    follower.followPath(scorePickup2b, true);
-                    shootingmotor.setPower(1);
-                    setPathState(7);
-                }
-            }
-            break;
-
-            case 7: {
-                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
-
-                    follower.followPath(scorePickup3, true);
-                    shootingmotor.setPower(0);
-                    setPathState(8);
-                    dogTimer.resetTimer();
-                }
-            }
-                break;
-
-            case 8: {
-                if (!follower.isBusy()) {
-                    follower.followPath(grabPickub3a, true);
-                    setPathState(9);
-                    dogTimer.resetTimer();
-                }
-            }
-                break;
-
-            case 9: {
-                if (!follower.isBusy()) {
-                    follower.followPath(grabPickup3b, true);
-                    shootingmotor.setPower(1);
-                    setPathState(10);
-                }
-            }
-                break;
+//            case 4: {
+//
+//                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
+//                    follower.followPath(scorePickup2, true);
+//                    setPathState(5);
+//                    shootingmotor.setPower(0);
+//                    dogTimer.resetTimer();
+//                }
+//            }
+//                break;
+//
+//            case 5: {
+//                if (!follower.isBusy()) {
+//                    follower.followPath(grabPickup2a, true);
+//                    setPathState(6);
+//                    dogTimer.resetTimer();
+//                }
+//            }
+//                break;
+//
+//            case 6: {
+//                if (!follower.isBusy()) {
+//                    follower.followPath(scorePickup2b, true);
+//                    shootingmotor.setPower(1);
+//                    setPathState(7);
+//                }
+//            }
+//            break;
+//
+//            case 7: {
+//                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
+//
+//                    follower.followPath(scorePickup3, true);
+//                    shootingmotor.setPower(0);
+//                    setPathState(8);
+//                    dogTimer.resetTimer();
+//                }
+//            }
+//                break;
+//
+//            case 8: {
+//                if (!follower.isBusy()) {
+//                    follower.followPath(grabPickub3a, true);
+//                    setPathState(9);
+//                    dogTimer.resetTimer();
+//                }
+//            }
+//                break;
+//
+//            case 9: {
+//                if (!follower.isBusy()) {
+//                    follower.followPath(grabPickup3b, true);
+//                    shootingmotor.setPower(1);
+//                    setPathState(10);
+//                }
+//            }
+               // break;
 //                    case 4:
 //                        /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup2Pose's position */
 //                        if(!follower.isBusy()) {
@@ -278,7 +285,8 @@ import java.util.Set;
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
         follower.setStartingPose(startPose);
-        shootingmotor = hardwareMap.get(DcMotor.class, "shootingmotor");
+        shootingmotor = hardwareMap.get(DcMotor.class, "Deposit");
+        intakeservo = hardwareMap.get(CRServo.class, "Servo_Deposit");
 
     }
 

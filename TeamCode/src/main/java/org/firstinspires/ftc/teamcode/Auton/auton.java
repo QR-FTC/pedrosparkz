@@ -20,7 +20,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.Set;
 
-@Autonomous(name = "Example Auto", group = "Examples")
+@Autonomous(name = "Example Auto farblue", group = "Examples")
 public class auton extends OpMode {
     private Follower follower;
     private DcMotor shootingmotor;
@@ -154,66 +154,67 @@ private final Pose startPose = new Pose(56,8, Math.toRadians(90));
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
 
                     follower.followPath(grabPickup1b, true);
-                    setPathState(3);
+//                    setPathState(3);
+                    setPathState(-1);
                     shootingmotor.setPower(1);
 
                 }
             }
                 break;
 
-            case 3: {
-                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
-                    follower.followPath(scorePickup2);
-                    setPathState(4);
-                    shootingmotor.setPower(0);
-                    dogTimer.resetTimer();
-                }
-            }
-                break;
-            case 4: {
-                if (!follower.isBusy()) {
-                    follower.followPath((scorePickup2a));
-                    setPathState(5);
-                    dogTimer.resetTimer();
-                }
-            }
-
-            case 5: {
-                if (!follower.isBusy()) {
-                    follower.followPath(scorePickup2b);
-                    setPathState(6);
-                    shootingmotor.setPower(1);
-                }
-            }
-                break;
-
-            case 6: {
-                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
-                    follower.followPath(scorePickup3);
-                    setPathState(7);
-                    shootingmotor.setPower(0);
-                    dogTimer.resetTimer();
-                }
-            }
-                break;
-
-            case 7: {
-                if (!follower.isBusy()) {
-                    follower.followPath(scorePickup3a);
-                    setPathState(8);
-                    dogTimer.resetTimer();
-                }
-            }
-                break;
-
-            case 8: {
-                if (!follower.isBusy()) {
-                    follower.followPath(scorePickup3b);
-                    setPathState(9);
-                    shootingmotor.setPower(1);
-                }
-            }
-                break;
+//            case 3: {
+//                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
+//                    follower.followPath(scorePickup2);
+//                    setPathState(4);
+//                    shootingmotor.setPower(0);
+//                    dogTimer.resetTimer();
+//                }
+//            }
+//                break;
+//            case 4: {
+//                if (!follower.isBusy()) {
+//                    follower.followPath((scorePickup2a));
+//                    setPathState(5);
+//                    dogTimer.resetTimer();
+//                }
+//            }
+//
+//            case 5: {
+//                if (!follower.isBusy()) {
+//                    follower.followPath(scorePickup2b);
+//                    setPathState(6);
+//                    shootingmotor.setPower(1);
+//                }
+//            }
+//                break;
+//
+//            case 6: {
+//                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
+//                    follower.followPath(scorePickup3);
+//                    setPathState(7);
+//                    shootingmotor.setPower(0);
+//                    dogTimer.resetTimer();
+//                }
+//            }
+//                break;
+//
+//            case 7: {
+//                if (!follower.isBusy()) {
+//                    follower.followPath(scorePickup3a);
+//                    setPathState(8);
+//                    dogTimer.resetTimer();
+//                }
+//            }
+//                break;
+//
+//            case 8: {
+//                if (!follower.isBusy()) {
+//                    follower.followPath(scorePickup3b);
+//                    setPathState(9);
+//                    shootingmotor.setPower(1);
+//                }
+//            }
+//                break;
 
             case 9: {
                 if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
@@ -224,33 +225,7 @@ private final Pose startPose = new Pose(56,8, Math.toRadians(90));
             }
                 break;
 
-//                        /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup2Pose's position */
-//                        if(!follower.isBusy()) {
-//                            /* Grab Sample */
-//                            /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-//                            follower.followPath(scorePickup2,true);
-//                            setPathState(5);
-//                        }
-//                        break;
-//                    case 5:
-//                        /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
-//                        if(!follower.isBusy()) {
-//                            /* Score Sample */
-//                            /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-//                            follower.followPath(grabPickup3,true);
-//                            setPathState(6);
-//                        }
-//                        break;
-//                    case 6:
-//                        /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position */
-//                        if(!follower.isBusy()) {
-//                            /* Grab Sample */
-//                            /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-//                            follower.followPath(scorePickup3, true);
-//                            setPathState(7);
-//                        }
-//                        break;
-
+//
         }
     }
 

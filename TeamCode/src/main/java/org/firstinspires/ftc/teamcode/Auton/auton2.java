@@ -20,7 +20,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.Set;
 
-@Autonomous(name = "Example Auto", group = "Examples")
+@Autonomous(name = "Example Auto closeblue", group = "Examples")
 public class auton2 extends OpMode {
     private Follower follower;
     private DcMotor shootingmotor;
