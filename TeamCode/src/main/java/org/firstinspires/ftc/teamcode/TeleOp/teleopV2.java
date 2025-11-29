@@ -100,11 +100,9 @@ public class teleopV2 extends OpMode {
             servoDeposit.setPosition(0.8);
         }
         else if(gamepad1.dpad_down){
-            servoDeposit.setPosition(-0.8);
-        }
-        else {
             servoDeposit.setPosition(0.0);
         }
+
 
 
 //       // if(gamepad2.right_trigger>0.1) {
@@ -131,18 +129,26 @@ public class teleopV2 extends OpMode {
 //        }
 //        follower.update();
 //        telemetryM.update();
-//        if (!automatedDrive) {
-//            //Make the last parameter false for field-centric
-//            //In case the drivers want to use a "slowMode" you can scale the vectors
-//            //This is the normal version to use in the TeleOp
-//            if (!slowMode) follower.setTeleOpDrive(
-//                    -gamepad1.left_stick_y,
-//                    -gamepad1.left_stick_x,
-//                    -gamepad1.right_stick_x,
-//                    true // Robot Centric
-//            );
-//            //This is how it looks with slowMode on
-//        }
+        if (!automatedDrive) {
+            //Make the last parameter false for field-centric
+            //In case the drivers want to use a "slowMode" you can scale the vectors
+            //This is the normal version to use in the TeleOp
+            if (!slowMode) follower.setTeleOpDrive(
+                    -gamepad1.left_stick_y,
+                    -gamepad1.left_stick_x,
+                    -gamepad1.right_stick_x,
+                    true // Robot Centric
+            );
+            //This is how it looks with slowMode on
+        }
+        telemetry.addData("Servo Position", servoDeposit.getPosition());
+        telemetry.addData("Intake Power Left", intake_2.getPower());
+        telemetry.addData("Intake Power Right", intake_3.getPower());
+        telemetry.addData("Deposit Power",deposit.getPower());
+        telemetry.addData("x", follower.getPose().getX());
+        telemetry.addData("y", follower.getPose().getY());
+        telemetry.addData("heading", follower.getPose().getHeading());
+        telemetry.update();
 //
 //
 //        telemetryM.debug("position", follower.getPose());
