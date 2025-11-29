@@ -27,9 +27,10 @@ import java.util.function.Supplier;
 
 @TeleOp(name="teleopV2")
 public class teleopV2 extends OpMode {
-    private CRServo servoDeposit;
+    private Servo servoDeposit;
     private DcMotor geckoWheels;
     private DcMotor intake_2;
+    private DcMotor deposit;
     private DcMotor intake_3;
     private Follower follower;
     public static Pose startingPose; //See ExampleAuto to understand how to use this
@@ -49,10 +50,11 @@ public class teleopV2 extends OpMode {
                 .addPath(new Path(new BezierLine(follower::getPose, new Pose(45, 98))))
                 .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(45), 0.8))
                 .build();
-        servoDeposit = hardwareMap.get(CRServo.class, "Servo_Deposit");
+        servoDeposit = hardwareMap.get(Servo.class, "Servo_Deposit");
         intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
         intake_2= hardwareMap.get(DcMotor.class, "Intake_2");
-        geckoWheels = hardwareMap.get(DcMotor.class, "Deposit");
+        //geckoWheels = hardwareMap.get(DcMotor.class, "Deposit");
+        deposit = hardwareMap.get(DcMotor.class, "Deposit");
         //while (opModeIsActive()) {
         //  waitForStart();
 
@@ -68,43 +70,65 @@ public class teleopV2 extends OpMode {
     @Override
     public void loop() {
         //Call this once per loop
-        if(gamepad1.right_trigger>0.1){
-            intake_2.setPower(-gamepad1.right_trigger);
-            intake_3.setPower(gamepad1.right_trigger);
+        if(gamepad1.dpad_left){
+            intake_2.setPower(-0.8);
+            intake_3.setPower(-0.8);
         }
-        else if(gamepad1.left_trigger>0.1){
-            intake_2.setPower(gamepad1.left_trigger);
-            intake_3.setPower(-gamepad1.left_trigger);
+        else if(gamepad1.dpad_right){
+            intake_2.setPower(0.8);
+            intake_3.setPower(0.8);
+
         }
+
         else {
             intake_2.setPower(0.0);
             intake_3.setPower(0.0);
 
+
         }
-        if(gamepad2.right_trigger>0.1) {
-            geckoWheels.setPower(gamepad2.right_trigger);
-        }
-       else if (gamepad2.left_trigger>0.1){
-            geckoWheels.setPower(-gamepad2.left_trigger);
+        if(gamepad1.right_trigger>0.1){
+            deposit.setPower(gamepad1.right_trigger);
+    }
+        else if(gamepad1.left_trigger>0.1) {
+            deposit.setPower(-gamepad1.left_trigger);
         }
         else {
-            geckoWheels.setPower(0.0);
+            deposit.setPower(0.0);
 
+        }
+        if(gamepad1.dpad_up){
+            servoDeposit.setPosition(0.8);
+        }
+        else if(gamepad1.dpad_down){
+            servoDeposit.setPosition(0.0);
         }
 
 
-        if (gamepad2.dpad_up){
-            servoDeposit.setPower(1);
 
-        }
-        if(gamepad2.dpad_left){
-            servoDeposit.setPower(0);
-        }
-        if(gamepad2.dpad_down){
-            servoDeposit.setPower(-1);
-        }
-        follower.update();
-        telemetryM.update();
+//       // if(gamepad2.right_trigger>0.1) {
+//        //    geckoWheels.setPower(gamepad2.right_trigger);
+//        }
+//       //else if (gamepad2.left_trigger>0.1){
+//            geckoWheels.setPower(-gamepad2.left_trigger);
+//        }
+//        else {
+//            geckoWheels.setPower(0.0);
+//
+//        }
+//
+//
+//        if (gamepad2.dpad_up){
+//            servoDeposit.setPower(1);
+//
+//        }
+//        if(gamepad2.dpad_left){
+//            servoDeposit.setPower(0);
+//        }
+//        if(gamepad2.dpad_down){
+//            servoDeposit.setPower(-1);
+//        }
+//        follower.update();
+//        telemetryM.update();
         if (!automatedDrive) {
             //Make the last parameter false for field-centric
             //In case the drivers want to use a "slowMode" you can scale the vectors
@@ -117,10 +141,18 @@ public class teleopV2 extends OpMode {
             );
             //This is how it looks with slowMode on
         }
-
-
-        telemetryM.debug("position", follower.getPose());
-        telemetryM.debug("velocity", follower.getVelocity());
-        telemetryM.debug("automatedDrive", automatedDrive);
+        telemetry.addData("Servo Position", servoDeposit.getPosition());
+        telemetry.addData("Intake Power Left", intake_2.getPower());
+        telemetry.addData("Intake Power Right", intake_3.getPower());
+        telemetry.addData("Deposit Power",deposit.getPower());
+        telemetry.addData("x", follower.getPose().getX());
+        telemetry.addData("y", follower.getPose().getY());
+        telemetry.addData("heading", follower.getPose().getHeading());
+        telemetry.update();
+//
+//
+//        telemetryM.debug("position", follower.getPose());
+//        telemetryM.debug("velocity", follower.getVelocity());
+//        telemetryM.debug("automatedDrive", automatedDrive);
     }
 }
