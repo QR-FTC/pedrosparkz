@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
@@ -32,7 +33,7 @@ import java.util.Set;
     private DcMotor intake_2;
     private DcMotor intake_3;
 
-    public CRServo intakeservo;
+    public Servo intakeservo;
 
 
     private final Pose startPose = new Pose(56, 8, Math.toRadians(90)); // the robot will be set where the left wheels are along the lines of the beginning of the third tile of x.
@@ -111,9 +112,9 @@ import java.util.Set;
             case 0: {
                 follower.followPath(scorePreload);
                 setPathState(1);
-                intake_2.setPower(-1);
-                intake_3.setPower(1);
-                intakeservo.setPower(-1);
+                intake_2.setPower(-0.8);
+                intake_3.setPower(0.8);
+                intakeservo.setPosition(-1);
                 shootingmotor.setPower(1);
                 dogTimer.resetTimer();
                 break;
@@ -132,7 +133,7 @@ import java.util.Set;
                     intake_2.setPower(0);
                     intake_3.setPower(0);
                     shootingmotor.setPower(0);
-                    intakeservo.setPower(0);
+                    intakeservo.setPosition(0);
                     setPathState(2);
                     dogTimer.resetTimer();
                 }
@@ -145,8 +146,8 @@ import java.util.Set;
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
                     follower.followPath(scorePickup1a, true);
                     setPathState(3);
-                    intake_2.setPower(-1);
-                    intake_3.setPower(1);
+                    intake_2.setPower(-0.8);
+                    intake_3.setPower(0.8);
                     dogTimer.resetTimer();
                 }
             }
@@ -158,10 +159,10 @@ import java.util.Set;
                     /* Score Sample */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(grabPickup1b, true);
-                    intake_3.setPower(-1);
-                    intake_2.setPower(1);
+                    intake_3.setPower(-0.8);
+                    intake_2.setPower(0.8);
                     shootingmotor.setPower(1);
-                    intakeservo.setPower(-1);
+                    intakeservo.setPosition(-1);
                     setPathState(4);
 
                 }
@@ -300,7 +301,7 @@ import java.util.Set;
         buildPaths();
         follower.setStartingPose(startPose);
         shootingmotor = hardwareMap.get(DcMotor.class, "Deposit");
-        intakeservo = hardwareMap.get(CRServo.class, "Servo_Deposit");
+        intakeservo = hardwareMap.get(Servo.class, "Servo_Deposit");
         intake_2 = hardwareMap.get(DcMotor.class, "Intake_2");
         intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
 
