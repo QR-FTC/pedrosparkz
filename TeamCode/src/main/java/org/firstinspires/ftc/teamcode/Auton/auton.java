@@ -293,8 +293,8 @@ private final Pose startPose = new Pose(88,8, Math.toRadians(90)); // the robot 
         actionTimer = new Timer();
         opmodeTimer.resetTimer();
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(startPose);
         buildPaths();
+        follower.setStartingPose(startPose);
         geckoWheels = hardwareMap.get(DcMotor.class, "Deposit");
         intake_2 = hardwareMap.get(DcMotor.class, "Intake_2");
         intake_3 = hardwareMap.get(DcMotor.class, "intake_3");

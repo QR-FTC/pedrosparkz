@@ -337,7 +337,7 @@ public class aunton2 extends OpMode {
         dogTimer = new Timer();
         opmodeTimer.resetTimer();
         follower = Constants.createFollower(hardwareMap);
-        buildPaths();
+        ;
         follower.setStartingPose(scorePose);
         geckoWheels = hardwareMap.get(DcMotor.class, "Deposit");
         intake_2 = hardwareMap.get(DcMotor.class, "Intake_2");
