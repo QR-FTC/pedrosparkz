@@ -55,7 +55,7 @@ public class teleopV2 extends OpMode {
         intake_2= hardwareMap.get(DcMotor.class, "Intake_2");
         //geckoWheels = hardwareMap.get(DcMotor.class, "Deposit");
         deposit = hardwareMap.get(DcMotor.class, "Deposit");
-        //while (opModeIsActive()) {
+        //while (opModeIsActive()) {c
         //  waitForStart();
 
 
@@ -70,13 +70,23 @@ public class teleopV2 extends OpMode {
     @Override
     public void loop() {
         //Call this once per loop
-        if(gamepad1.dpad_left){
+follower.update();
+
+
+        follower.setTeleOpDrive(
+                -gamepad1.left_stick_y,
+                -gamepad1.left_stick_x,
+                -gamepad1.right_stick_x,
+                true // Robot Centric
+        );
+        if(gamepad1.right_bumper){
             intake_2.setPower(-0.8);
-            intake_3.setPower(-0.8);
-        }
-        else if(gamepad1.dpad_right){
-            intake_2.setPower(0.8);
             intake_3.setPower(0.8);
+        }
+
+        else if(gamepad1.left_bumper){
+            intake_2.setPower(0.8);
+            intake_3.setPower(-0.8);
 
         }
 
@@ -128,19 +138,19 @@ public class teleopV2 extends OpMode {
 //            servoDeposit.setPower(-1);
 //        }
 //        follower.update();
-//        telemetryM.update();
-        if (!automatedDrive) {
-            //Make the last parameter false for field-centric
-            //In case the drivers want to use a "slowMode" you can scale the vectors
-            //This is the normal version to use in the TeleOp
-            if (!slowMode) follower.setTeleOpDrive(
-                    -gamepad1.left_stick_y,
-                    -gamepad1.left_stick_x,
-                    -gamepad1.right_stick_x,
-                    true // Robot Centric
-            );
-            //This is how it looks with slowMode on
-        }
+////        telemetryM.update();
+//        if (!automatedDrive) {
+//            //Make the last parameter false for field-centric
+//            //In case the drivers want to use a "slowMode" you can scale the vectors
+//            //This is the normal version to use in the TeleOp
+//            if (!slowMode) follower.setTeleOpDrive(
+//                    -gamepad1.left_stick_y,
+//                    -gamepad1.left_stick_x,
+//                    -gamepad1.right_stick_x,
+//                    true // Robot Centric
+//            );
+//            //This is how it looks with slowMode on
+//        }
         telemetry.addData("Servo Position", servoDeposit.getPosition());
         telemetry.addData("Intake Power Left", intake_2.getPower());
         telemetry.addData("Intake Power Right", intake_3.getPower());
