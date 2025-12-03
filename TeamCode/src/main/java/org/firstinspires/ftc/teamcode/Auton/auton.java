@@ -140,7 +140,7 @@ private final Pose startPose = new Pose(88,8, Math.toRadians(90)); // the robot 
 
 
             case 0: {
-                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 8.00) {
+                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 6.00) {
                     follower.followPath(grabPickup1);
                     intakeservo.setPower(0);
                     intake_3.setPower(0);
@@ -178,10 +178,6 @@ private final Pose startPose = new Pose(88,8, Math.toRadians(90)); // the robot 
 
                     follower.followPath(grabPickup1b, true);
 //                    setPathState(3);
-                    intake_2.setPower(-1);
-                    intake_3.setPower(1);
-                    intakeservo.setPower(-1);
-                    geckoWheels.setPower(1);
                     setPathState(9);
                     dogTimer.resetTimer();
 
