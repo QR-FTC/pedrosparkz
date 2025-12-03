@@ -25,6 +25,7 @@ import java.util.Set;
 @Disabled
 @Autonomous(name = "Example Auto farblue", group = "Examples")
 public class auntonintesting extends OpMode {
+    boolean case1Started = false;
 
     private Follower follower;
     private DcMotor shootingmotor;
@@ -114,24 +115,44 @@ public class auntonintesting extends OpMode {
                 follower.followPath(scorePreload);
                 setPathState(1);
                 dogTimer.resetTimer();
+                catTimer.resetTimer();
+                boolean case1Started = false;
             }
             break;
 
             case 1: {
                 if (!follower.isBusy()) {
-                    catTimer.resetTimer();
+                    if (!case1Started) {
+                        case1Started=true;
+                        catTimer.resetTimer();
+                        dogTimer.resetTimer();
+// "case1Started" is used so that the timers will only start counting once the rest continues and wont reset when it runs over the code again.
+                    }
+
                     intake_2.setPower(-1);
                     intake_3.setPower(1);
+                    // used to push the ball further if needed.
                     shootingmotor.setPower(1);
-                    if (catTimer.getElapsedTimeSeconds() >= 1.50) {
+                    if ( 3.50 <= catTimer.getElapsedTimeSeconds() && catTimer.getElapsedTimeSeconds() < 6.50) {
                         intakeservo.setPosition(0.8);
-                        catTimer.resetTimer();
+                        // it takes around 3.50 
                     }
-                    if (catTimer.getElapsedTimeSeconds() <= 0.00) {
+                    if (catTimer.getElapsedTimeSeconds() >= 6.50 && catTimer.getElapsedTimeSeconds()<9.50) {
                         intakeservo.setPosition(0);
                     }
-                    
-                    setPathState(2);
+                    if (catTimer.getElapsedTimeSeconds() >= 9.50 && catTimer.getElapsedTimeSeconds() <12.50) {
+                        intakeservo.setPosition(0.8);
+                    }
+                    if(catTimer.getElapsedTimeSeconds() >= 12.50 && catTimer.getElapsedTimeSeconds() < 15.50)
+                        intakeservo.setPosition(0);
+                    if(catTimer.getElapsedTimeSeconds() >= 15.50 && catTimer.getElapsedTimeSeconds() < 16.00) {
+                        intakeservo.setPosition(0.8);
+                    }
+
+
+                    if(catTimer.getElapsedTimeSeconds() >= 16.00) {
+                        setPathState(2);
+                    }
                 }
 
                 break;
@@ -143,7 +164,7 @@ public class auntonintesting extends OpMode {
             - Robot Position: "if(follower.getPose().getX() > 36) {}"
             */
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
-                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 8.00) {
+                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() >= 16.50) {
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(grabPickup1, true);
@@ -176,6 +197,8 @@ public class auntonintesting extends OpMode {
                     /* Score Sample */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(grabPickup1b, true);
+                    intake_2.setPower(0);
+                    intake_3.setPower(0);
                     setPathState(6);
 
                 }
