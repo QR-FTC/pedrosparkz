@@ -80,13 +80,13 @@ follower.update();
                 true // Robot Centric
         );
         if(gamepad1.right_bumper){
-            intake_2.setPower(-0.8);
-            intake_3.setPower(0.8);
+            intake_2.setPower(0.8);
+            intake_3.setPower(-0.8);
         }
 
         else if(gamepad1.left_bumper){
-            intake_2.setPower(0.8);
-            intake_3.setPower(-0.8);
+            intake_2.setPower(-0.8);
+            intake_3.setPower(0.8);
 
         }
 
