@@ -82,13 +82,13 @@ follower.update();
                 true // Robot Centric
         );
         if(gamepad1.right_bumper){
-            intake_2.setPower(-0.8);
-            intake_3.setPower(0.8);
+            intake_2.setPower(0.8);
+            intake_3.setPower(-0.8);
         }
 
         else if(gamepad1.left_bumper){
-            intake_2.setPower(0.8);
-            intake_3.setPower(-0.8);
+            intake_2.setPower(-0.8);
+            intake_3.setPower(0.8);
 
         }
 
@@ -109,13 +109,18 @@ follower.update();
 
         }
         if(gamepad2.dpad_up){
+<<<<<<< HEAD
             servoDeposit.setPosition(0.8);
+=======
+            servoDeposit.setPosition(servoDeposit.getPosition()+0.1);
+>>>>>>> 7baf219141cbaa3c2d1db47ef81c907279e4f050
             while (SleepTimer.milliseconds()<150)
             {
                 telemetry.update();
             }
 
         }
+<<<<<<< HEAD
         else if(gamepad2.dpad_down) {
             servoDeposit.setPosition(0.3);
             while (SleepTimer.milliseconds() < 150) {
@@ -132,6 +137,25 @@ follower.update();
             servoIntake.setPosition(servoIntake.getPosition()+0.1);
             while(SleepTimer.milliseconds()<150) {
                 telemetry.update();
+=======
+        else if(gamepad2.dpad_down){
+            servoDeposit.setPosition(servoDeposit.getPosition()-0.1);
+            while (SleepTimer.milliseconds()<150)
+            {
+                telemetry.update();
+            }
+            if(gamepad2.b) {
+                servoIntake.setPosition(servoIntake.getPosition()-0.1);
+                while(SleepTimer.milliseconds()<150) {
+                    telemetry.update();
+                }
+                }
+            if(gamepad2.a) {
+                servoIntake.setPosition(servoIntake.getPosition()+0.1);
+                while(SleepTimer.milliseconds()<150) {
+                    telemetry.update(); 
+                }
+>>>>>>> 7baf219141cbaa3c2d1db47ef81c907279e4f050
             }
         }
 
@@ -181,6 +205,7 @@ follower.update();
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
+        telemetry.addData("Servo Intake Position", servoIntake.getPosition());
         telemetry.update();
 //
 //
