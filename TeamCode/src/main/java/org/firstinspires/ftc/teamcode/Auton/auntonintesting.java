@@ -22,8 +22,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.Set;
-@Disabled
-@Autonomous(name = "Example Auto farblue", group = "Examples")
+@Autonomous(name = "farblues", group = "Examples")
 public class auntonintesting extends OpMode {
     boolean gateservoended2 = false;
     boolean case1Started = false;
@@ -128,6 +127,10 @@ public class auntonintesting extends OpMode {
 
     public void autonomousPathUpdate() {
         switch (pathState) {
+            case 0: {
+                follower.followPath(scorePreload);
+                setPathState(1);
+            }
 //            case 0: {
 //                follower.followPath(scorePreload);
 //                setPathState(1);
@@ -153,26 +156,25 @@ public class auntonintesting extends OpMode {
                     }
                     if (catTimer.getElapsedTimeSeconds() >= 6.50 && catTimer.getElapsedTimeSeconds()<9.50) {
                         intakeservo.setPosition(0.3);
+                        gateservo.setPosition(0.2);
                     }
-                        if(intakeservo.getPosition()==0.3) {
-                            gateservo.setPosition(0.8);
-                        }
-                        else if(gateservo.getPosition() == 0.8) {
-                            if(!gateservoended) {
-                                gateservoended=true;
-                                arrowTimer.resetTimer();
-                            }
-                            intake_2.setPower(-1);
-                            intake_3.setPower(1);
-                            if(arrowTimer.getElapsedTimeSeconds()>0.00 && arrowTimer.getElapsedTime()<1.00) {
-                                gateservo.setPosition(0.3);
+                    if(!gateservoended) {
+                        gateservoended=true;
+                        arrowTimer.resetTimer();
+                    }
+                        else if(gateservo.getPosition() == 0.2 && intakeservo.getPosition() == 0.3 && arrowTimer.getElapsedTimeSeconds() > 0.00 && arrowTimer.getElapsedTimeSeconds() < 1.00) {
+                        intake_2.setPower(-1);
+                        intake_3.setPower(1);
+                    }
+                            if(arrowTimer.getElapsedTimeSeconds()>1.00 && arrowTimer.getElapsedTime()<2.00 && intake_2.getPower()==-1 && intake_3.getPower()==1) {
                                 intake_3.setPower(0);
+                                gateservo.setPosition(0);
                                 intake_2.setPower(0);
                             }
 
 
                         // it takes around three seconds to put the lift mechanism back to ground state.
-                    }
+
 //                    if (catTimer.getElapsedTimeSeconds() < 11.50 && catTimer.getElapsedTimeSeconds()>= 9.50) {
 //                        follower.followPath(strafe);
 //
@@ -186,29 +188,28 @@ public class auntonintesting extends OpMode {
                     }
                     if(catTimer.getElapsedTimeSeconds() >= 16.50 && catTimer.getElapsedTimeSeconds() < 19.50) {
                         intakeservo.setPosition(0.3);
+                        gateservo.setPosition(0.2);
                     }
-                    if(intakeservo.getPosition()==0.3) {
-                        gateservo.setPosition(0.8);
+                    if(!gateservoended2) {
+                        gateservoended2=true;
+                        bowTimer.resetTimer();
                     }
-                    else if(gateservo.getPosition() == 0.8) {
-                        if(!gateservoended) {
-                            gateservoended=true;
-                            arrowTimer.resetTimer();
-                        }
+                   if(gateservo.getPosition() == 0.2 && intakeservo.getPosition() ==0.3 && bowTimer.getElapsedTimeSeconds() > 0.00 && bowTimer.getElapsedTimeSeconds() < 1.00) {
                         intake_2.setPower(-1);
                         intake_3.setPower(1);
-                        if(arrowTimer.getElapsedTimeSeconds()>0.00 && arrowTimer.getElapsedTime()<1.00) {
-                            gateservo.setPosition(0.3);
+                    }
+                        if(bowTimer.getElapsedTimeSeconds()>1.00 && bowTimer.getElapsedTime()<2.00) {
+                            gateservo.setPosition(0);
                             intake_3.setPower(0);
                             intake_2.setPower(0);
                         }
-                    }
+                        if(bowTimer.getElapsedTimeSeconds()>= 2.00 && bowTimer.getElapsedTimeSeconds() < 4.00) {
+                            intakeservo.setPosition(0.8);
+                        }
 
 
-                    if(catTimer.getElapsedTimeSeconds() >= 22.50 && catTimer.getElapsedTimeSeconds() < 25.50) {
-                        intakeservo.setPosition(0.8);
-                        // ball three is to be shot here, did not set it back to zero because we can do that simultaneously with the next path to save time.
-                    }
+
+
 
 
                     if(catTimer.getElapsedTimeSeconds() >= 30.00) {
