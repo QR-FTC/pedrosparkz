@@ -11,8 +11,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-public class farBlue {@Autonomous(name = "Example Auto", group = "Examples")
-public class farRed extends OpMode {
+@Autonomous(name = "Far Blue", group = "Examples")
+public class farBlue extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
@@ -224,8 +224,4 @@ public class farRed extends OpMode {
     /** We do not use this because everything should automatically disable **/
     @Override
     public void stop() {}
-}
-
-
-
 }

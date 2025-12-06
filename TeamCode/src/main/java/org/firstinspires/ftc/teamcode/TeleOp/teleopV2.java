@@ -46,7 +46,6 @@ public class teleopV2 extends OpMode {
     private double slowModeMultiplier = 0.5;
     @Override
     public void init() {
-        //hi
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
         follower.update();
@@ -55,15 +54,11 @@ public class teleopV2 extends OpMode {
                 .addPath(new Path(new BezierLine(follower::getPose, new Pose(45, 98))))
                 .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(45), 0.8))
                 .build();
-        servoDeposit = hardwareMap.get(Servo.class, "Servo_Deposit");
-        servoIntake = hardwareMap.get(Servo.class, "Servo_Intake");
+        servoDeposit = hardwareMap.get(Servo.class, "servoDeposit");
+        servoIntake = hardwareMap.get(Servo.class, "servoIntake");
         intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
-        intake_2= hardwareMap.get(DcMotor.class, "Intake_2");
-        //geckoWheels = hardwareMap.get(DcMotor.class, "Deposit");
-        deposit = hardwareMap.get(DcMotor.class, "Deposit");
-        //while (opModeIsActive()) {c
-        //  waitForStart();
-
+        intake_2= hardwareMap.get(DcMotor.class, "intake_2");
+        deposit = hardwareMap.get(DcMotor.class, "depositMotor");
 
     }
     @Override
@@ -103,41 +98,40 @@ follower.update();
 
 
         }
-        if(gamepad1.right_trigger>0.1){
+        if(gamepad2.right_trigger>0.1){
             deposit.setPower(gamepad1.right_trigger);
     }
-        else if(gamepad1.left_trigger>0.1) {
+        else if(gamepad2.left_trigger>0.1) {
             deposit.setPower(-gamepad1.left_trigger);
         }
         else {
             deposit.setPower(0.0);
 
         }
-        if(gamepad1.dpad_up){
-            servoDeposit.setPosition(servoDeposit.getPosition()+0.1);
+        if(gamepad2.dpad_up){
+            servoDeposit.setPosition(0.8);
             while (SleepTimer.milliseconds()<150)
             {
                 telemetry.update();
             }
 
         }
-        else if(gamepad1.dpad_down){
-            servoDeposit.setPosition(servoDeposit.getPosition()-0.1);
-            while (SleepTimer.milliseconds()<150)
-            {
+        else if(gamepad2.dpad_down) {
+            servoDeposit.setPosition(0.3);
+            while (SleepTimer.milliseconds() < 150) {
                 telemetry.update();
             }
-            if(gamepad1.dpad_left) {
-                servoIntake.setPosition(servoIntake.getPosition()-0.1);
-                while(SleepTimer.milliseconds()<150) {
-                    telemetry.update();
-                }
-                }
-            if(gamepad1.dpad_right) {
-                servoIntake.setPosition(servoIntake.getPosition()+0.1);
-                while(SleepTimer.milliseconds()<150) {
-                    telemetry.update(); 
-                }
+        }
+        if(gamepad2.b) {
+            servoIntake.setPosition(servoIntake.getPosition()-0.1);
+            while(SleepTimer.milliseconds()<150) {
+                telemetry.update();
+            }
+        }
+        else if(gamepad2.a) {
+            servoIntake.setPosition(servoIntake.getPosition()+0.1);
+            while(SleepTimer.milliseconds()<150) {
+                telemetry.update();
             }
         }
 
@@ -179,7 +173,8 @@ follower.update();
 //            );
 //            //This is how it looks with slowMode on
 //        }
-        telemetry.addData("Servo Position", servoDeposit.getPosition());
+        telemetry.addData("Deposit Servo Position", servoDeposit.getPosition());
+        telemetry.addData("Gate Servo Position", servoIntake.getPosition());
         telemetry.addData("Intake Power Left", intake_2.getPower());
         telemetry.addData("Intake Power Right", intake_3.getPower());
         telemetry.addData("Deposit Power",deposit.getPower());

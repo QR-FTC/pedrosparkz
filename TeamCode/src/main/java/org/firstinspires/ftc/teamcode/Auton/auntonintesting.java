@@ -25,16 +25,20 @@ import java.util.Set;
 @Disabled
 @Autonomous(name = "Example Auto farblue", group = "Examples")
 public class auntonintesting extends OpMode {
+    boolean gateservoended2 = false;
     boolean case1Started = false;
+    boolean gateservoended = false;
 
     private Follower follower;
     private DcMotor shootingmotor;
-    private Timer pathTimer, actionTimer, opmodeTimer, catTimer, dogTimer;
+    private Timer pathTimer, actionTimer, opmodeTimer, catTimer, dogTimer, arrowTimer, bowTimer;
     private int pathState;
     private DcMotor intake_2;
     private DcMotor intake_3;
 
-    public Servo intakeservo;
+    private Servo intakeservo;
+    private Servo gateservo;
+
 
 
     private final Pose startPose = new Pose(56, 8, Math.toRadians(90)); // the robot will be set where the left wheels are along the lines of the beginning of the third tile of x.
@@ -141,9 +145,6 @@ public class auntonintesting extends OpMode {
                         dogTimer.resetTimer();
 // "case1Started" is used so that the timers will only start counting once the rest continues and wont reset when it runs over the code again.
                     }
-
-                    intake_2.setPower(-1);
-                    intake_3.setPower(1);
                     // used to push the ball further if needed.
                     shootingmotor.setPower(1);
                     if ( 3.50 <= catTimer.getElapsedTimeSeconds() && catTimer.getElapsedTimeSeconds() < 6.50) {
@@ -151,7 +152,25 @@ public class auntonintesting extends OpMode {
                         // it takes around 3 seconds to lift the servo fully up. the initial 3.50 seconds are for the balls to go inside and find a position within the shooter itself.
                     }
                     if (catTimer.getElapsedTimeSeconds() >= 6.50 && catTimer.getElapsedTimeSeconds()<9.50) {
-                        intakeservo.setPosition(0);
+                        intakeservo.setPosition(0.3);
+                    }
+                        if(intakeservo.getPosition()==0.3) {
+                            gateservo.setPosition(0.8);
+                        }
+                        else if(gateservo.getPosition() == 0.8) {
+                            if(!gateservoended) {
+                                gateservoended=true;
+                                arrowTimer.resetTimer();
+                            }
+                            intake_2.setPower(-1);
+                            intake_3.setPower(1);
+                            if(arrowTimer.getElapsedTimeSeconds()>0.00 && arrowTimer.getElapsedTime()<1.00) {
+                                gateservo.setPosition(0.3);
+                                intake_3.setPower(0);
+                                intake_2.setPower(0);
+                            }
+
+
                         // it takes around three seconds to put the lift mechanism back to ground state.
                     }
 //                    if (catTimer.getElapsedTimeSeconds() < 11.50 && catTimer.getElapsedTimeSeconds()>= 9.50) {
@@ -165,16 +184,50 @@ public class auntonintesting extends OpMode {
                         intakeservo.setPosition(0.8);
                         // continue the same processes for if statement one and if statement two, ball 2 is being shot
                     }
-                    if(catTimer.getElapsedTimeSeconds() >= 16.50 && catTimer.getElapsedTimeSeconds() < 19.50)
-                        intakeservo.setPosition(0);
+                    if(catTimer.getElapsedTimeSeconds() >= 16.50 && catTimer.getElapsedTimeSeconds() < 19.50) {
+                        intakeservo.setPosition(0.3);
+                    }
+                    if(intakeservo.getPosition()==0.3) {
+                        gateservo.setPosition(0.8);
+                    }
+                    else if(gateservo.getPosition() == 0.8) {
+                        if(!gateservoended) {
+                            gateservoended=true;
+                            arrowTimer.resetTimer();
+                        }
+                        intake_2.setPower(-1);
+                        intake_3.setPower(1);
+                        if(arrowTimer.getElapsedTimeSeconds()>0.00 && arrowTimer.getElapsedTime()<1.00) {
+                            gateservo.setPosition(0.3);
+                            intake_3.setPower(0);
+                            intake_2.setPower(0);
+                        }
+                    }
+
+
                     if(catTimer.getElapsedTimeSeconds() >= 22.50 && catTimer.getElapsedTimeSeconds() < 25.50) {
                         intakeservo.setPosition(0.8);
                         // ball three is to be shot here, did not set it back to zero because we can do that simultaneously with the next path to save time.
                     }
 
 
-                    if(catTimer.getElapsedTimeSeconds() >= 16.00) {
+                    if(catTimer.getElapsedTimeSeconds() >= 30.00) {
                         setPathState(-1);
+                        if(intakeservo.getPosition()==0.3) {
+                            gateservo.setPosition(0.8);
+                        }
+                        else if(gateservo.getPosition() == 0.8) {
+                            if(!gateservoended) {
+                                gateservoended=true;
+                                arrowTimer.resetTimer();
+                            }
+                            intake_2.setPower(-1);
+                            intake_3.setPower(1);
+                            if(arrowTimer.getElapsedTimeSeconds()>0.00 && arrowTimer.getElapsedTime()<1.50) {
+                                intake_3.setPower(0);
+                                intake_2.setPower(0);
+                            }
+                        }
                     }
                 }
 
@@ -363,6 +416,7 @@ public class auntonintesting extends OpMode {
         intakeservo = hardwareMap.get(Servo.class, "Servo_Deposit");
         intake_2 = hardwareMap.get(DcMotor.class, "Intake_2");
         intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
+        gateservo = hardwareMap.get(Servo.class, "Servo_Intake");
 
     }
 
