@@ -28,9 +28,7 @@ import java.util.Timer;
 import java.util.function.Supplier;
 
 @TeleOp(name="teleopV2")
-public class teleopV2 extends OpMode {
-
-    private Servo servoIntake;
+public class liftyshoot extends OpMode {
     private Servo servoDeposit;
     private ElapsedTime SleepTimer = new ElapsedTime();
     private DcMotor geckoWheels;
@@ -56,7 +54,6 @@ public class teleopV2 extends OpMode {
                 .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(45), 0.8))
                 .build();
         servoDeposit = hardwareMap.get(Servo.class, "Servo_Deposit");
-        servoIntake = hardwareMap.get(Servo.class, "Servo_Intake");
         intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
         intake_2= hardwareMap.get(DcMotor.class, "Intake_2");
         //geckoWheels = hardwareMap.get(DcMotor.class, "Deposit");
@@ -77,7 +74,7 @@ public class teleopV2 extends OpMode {
     public void loop() {
         SleepTimer.reset();
         //Call this once per loop
-follower.update();
+        follower.update();
 
 
         follower.setTeleOpDrive(
@@ -86,35 +83,9 @@ follower.update();
                 -gamepad1.right_stick_x,
                 true // Robot Centric
         );
-        if(gamepad1.right_bumper){
-            intake_2.setPower(-0.8);
-            intake_3.setPower(0.8);
-        }
-
-        else if(gamepad1.left_bumper){
-            intake_2.setPower(0.8);
-            intake_3.setPower(-0.8);
-
-        }
-
-        else {
-            intake_2.setPower(0.0);
-            intake_3.setPower(0.0);
-
-
-        }
-        if(gamepad1.right_trigger>0.1){
-            deposit.setPower(gamepad1.right_trigger);
-    }
-        else if(gamepad1.left_trigger>0.1) {
-            deposit.setPower(-gamepad1.left_trigger);
-        }
-        else {
-            deposit.setPower(0.0);
-
-        }
         if(gamepad1.dpad_up){
-            servoDeposit.setPosition(servoDeposit.getPosition()+0.1);
+            deposit.setPower(1);
+            servoDeposit.setPosition(servoDeposit.getPosition()+0.5);
             while (SleepTimer.milliseconds()<150)
             {
                 telemetry.update();
@@ -126,18 +97,6 @@ follower.update();
             while (SleepTimer.milliseconds()<150)
             {
                 telemetry.update();
-            }
-            if(gamepad1.dpad_left) {
-                servoIntake.setPosition(servoIntake.getPosition()-0.1);
-                while(SleepTimer.milliseconds()<150) {
-                    telemetry.update();
-                }
-                }
-            if(gamepad1.dpad_right) {
-                servoIntake.setPosition(servoIntake.getPosition()+0.1);
-                while(SleepTimer.milliseconds()<150) {
-                    telemetry.update(); 
-                }
             }
         }
 
