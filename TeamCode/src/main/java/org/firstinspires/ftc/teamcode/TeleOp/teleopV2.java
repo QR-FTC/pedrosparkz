@@ -20,51 +20,45 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-import java.util.Timer;
 import java.util.function.Supplier;
 
 @TeleOp(name="teleopV2")
 public class teleopV2 extends OpMode {
-    private int D;
-
-    private Servo servoIntake;
-    private Servo servoDeposit;
-    private ElapsedTime SleepTimer = new ElapsedTime();
+    private CRServo servoDeposit;
     private DcMotor geckoWheels;
     private DcMotor intake_2;
-    private DcMotor deposit;
     private DcMotor intake_3;
-    private static Follower follower;
+    private Follower follower;
     public static Pose startingPose; //See ExampleAuto to understand how to use this
     private boolean automatedDrive;
     private Supplier<PathChain> pathChain;
     private TelemetryManager telemetryM;
     private boolean slowMode = false;
     private double slowModeMultiplier = 0.5;
-
     @Override
     public void init() {
+        //hi
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(36,12, 90));
+        follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
         follower.update();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
                 .addPath(new Path(new BezierLine(follower::getPose, new Pose(45, 98))))
                 .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(45), 0.8))
                 .build();
-        servoDeposit = hardwareMap.get(Servo.class, "servoDeposit");
-        servoIntake = hardwareMap.get(Servo.class, "servoIntake");
+        servoDeposit = hardwareMap.get(CRServo.class, "Servo_Deposit");
         intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
-        intake_2= hardwareMap.get(DcMotor.class, "intake_2");
-        deposit = hardwareMap.get(DcMotor.class, "depositMotor");
+        intake_2= hardwareMap.get(DcMotor.class, "Intake_2");
+        geckoWheels = hardwareMap.get(DcMotor.class, "Deposit");
+        //while (opModeIsActive()) {
+        //  waitForStart();
+
 
     }
     @Override
-
     public void start() {
         //The parameter controls whether the Follower should use break mode on the motors (using it is recommended).
         //In order to use float mode, add .useBrakeModeInTeleOp(true); to your Drivetrain Constants in Constant.java (for Mecanum)
@@ -73,214 +67,67 @@ public class teleopV2 extends OpMode {
     }
     @Override
     public void loop() {
-        SleepTimer.reset();
         //Call this once per loop
+
+        intake_2.setPower(-gamepad1.right_trigger);
+        intake_3.setPower(gamepad1.right_trigger);
+        geckoWheels.setPower(gamepad2.left_trigger);
+
+
+        if (gamepad2.dpad_up){
+            servoDeposit.setPower(1);
+
+        }
+        if(gamepad2.dpad_left){
+            servoDeposit.setPower(0);
+        }
+        if(gamepad2.dpad_down){
+            servoDeposit.setPower(-1);
+        }
         follower.update();
-<<<<<<< HEAD
-        Pose pose = follower.getPose();
-        double x = pose.getX();
-        double y = pose.getY();
-        double targetX = 12;
-        double targetY = 132;
-        double BDistance = Math.sqrt(Math.pow((x-12),2) + Math.pow(y-132, 2));
-        double RDisance = Math.sqrt(Math.pow((x-132),2) + Math.pow(y-132, 2));
-=======
-
->>>>>>> 5a055f0a784bf2972d2dc0910d3fb1e26b27126d
-
-        follower.setTeleOpDrive(
-                -gamepad1.left_stick_y,
-                -gamepad1.left_stick_x,
-                -gamepad1.right_stick_x,
-                true // Robot Centric
-        );
-<<<<<<< HEAD
-
-        if(gamepad1.right_bumper){
-            intake_2.setPower(-0.8);
-            intake_3.setPower(0.8);
+        telemetryM.update();
+        if (!automatedDrive) {
+            //Make the last parameter false for field-centric
+            //In case the drivers want to use a "slowMode" you can scale the vectors
+            //This is the normal version to use in the TeleOp
+            if (!slowMode) follower.setTeleOpDrive(
+                    -gamepad1.left_stick_y,
+                    -gamepad1.left_stick_x,
+                    -gamepad1.right_stick_x * 0.75,
+                    true // Robot Centric
+            );
+                //This is how it looks with slowMode on
+            else follower.setTeleOpDrive(
+                    -gamepad1.left_stick_y * slowModeMultiplier,
+                    -gamepad1.left_stick_x * slowModeMultiplier,
+                    -gamepad1.right_stick_x * slowModeMultiplier,
+                    true // Robot Centric
+            );
         }
-        else if(gamepad1.left_bumper){
-            intake_2.setPower(0.8);
-            intake_3.setPower(-0.8);
+        //Automated PathFollowing
+        if (gamepad1.aWasPressed()) {
+            follower.followPath(pathChain.get());
+            automatedDrive = true;
         }
-        else {
-=======
-        if (gamepad1.right_bumper) {
-            intake_2.setPower(0.8);
-            intake_3.setPower(-0.8);
-        } else if (gamepad1.left_bumper) {
-            intake_2.setPower(-0.8);
-            intake_3.setPower(0.8);
-
-        } else {
->>>>>>> 5a055f0a784bf2972d2dc0910d3fb1e26b27126d
-            intake_2.setPower(0.0);
-            intake_3.setPower(0.0);
+        //Stop automated following if the follower is done
+        if (automatedDrive && (gamepad1.bWasPressed() || !follower.isBusy())) {
+            follower.startTeleopDrive();
+            automatedDrive = false;
         }
-<<<<<<< HEAD
-
-        if(gamepad2.right_trigger>0.1){
-            deposit.setPower(-0.75*(gamepad2.right_trigger));
+        //Slow Mode
+        if (gamepad1.rightBumperWasPressed()) {
+            slowMode = !slowMode;
         }
-        else {
-=======
-        if (gamepad2.right_trigger > 0.1) {
-            deposit.setPower(gamepad1.right_trigger);
-        } else if (gamepad2.left_trigger > 0.1) {
-            deposit.setPower(-gamepad1.left_trigger);
-        } else {
->>>>>>> 5a055f0a784bf2972d2dc0910d3fb1e26b27126d
-            deposit.setPower(0.0);
+        //Optional way to change slow mode strength
+        if (gamepad1.xWasPressed()) {
+            slowModeMultiplier += 0.25;
         }
-<<<<<<< HEAD
-
-        if(gamepad2.dpad_up){
-            servoDeposit.setPosition(0.8);
-            while (SleepTimer.milliseconds()<150) {
-               telemetry.update();
-=======
-        if (gamepad2.dpad_up) {
-
-            servoDeposit.setPosition(0.8);
-
-            servoDeposit.setPosition(servoDeposit.getPosition() + 0.1);
-
-            while (SleepTimer.milliseconds() < 150) {
-                telemetry.update();
->>>>>>> 5a055f0a784bf2972d2dc0910d3fb1e26b27126d
-            }
+        //Optional way to change slow mode strength
+        if (gamepad2.yWasPressed()) {
+            slowModeMultiplier -= 0.25;
         }
-
-<<<<<<< HEAD
-        if(gamepad2.dpad_down) {
-=======
-        } else if (gamepad2.dpad_down) {
->>>>>>> 5a055f0a784bf2972d2dc0910d3fb1e26b27126d
-            servoDeposit.setPosition(0.3);
-            while(SleepTimer.milliseconds()<150) {
-                telemetry.update();
-            }
-        }
-<<<<<<< HEAD
-
-        if(gamepad2.b) {
-            servoIntake.setPosition(0.1);
-            while(SleepTimer.milliseconds()<150) {
-                telemetry.update();
-            }
-        }
-        else if(gamepad2.a) {
-            servoIntake.setPosition(0.2);
-            while(SleepTimer.milliseconds()<150) {
-                telemetry.update();
-            }
-        }
-        if(gamepad2.x) {
-            servoDeposit.setPosition(0.3);
-            servoIntake.setPosition(0.2);
-            while(SleepTimer.milliseconds()<150) {
-                telemetry.update();
-            }
-        }
-=======
-        if (gamepad2.b) {
-            servoIntake.setPosition(servoIntake.getPosition() - 0.1);
-            while (SleepTimer.milliseconds() < 150) {
-                telemetry.update();
-            }
-        } else if (gamepad2.a) {
-            servoIntake.setPosition(servoIntake.getPosition() + 0.1);
-            while (SleepTimer.milliseconds() < 150) {
-                telemetry.update();
->>>>>>> 5a055f0a784bf2972d2dc0910d3fb1e26b27126d
-
-       if (gamepad2.dpad_down) {
-                    servoDeposit.setPosition(servoDeposit.getPosition() - 0.1);
-                    while (SleepTimer.milliseconds() < 150) {
-                        telemetry.update();
-                    }
-                    if (gamepad2.b) {
-                        servoIntake.setPosition(servoIntake.getPosition() - 0.1);
-                        while (SleepTimer.milliseconds() < 150) {
-                            telemetry.update();
-                        }
-                    }
-                    if (gamepad2.a) {
-                        servoIntake.setPosition(servoIntake.getPosition() + 0.1);
-                        while (SleepTimer.milliseconds() < 150) {
-                            telemetry.update();
-                        }
-
-                    }
-                }
-
-
-//       // if(gamepad2.right_trigger>0.1) {
-//        //    geckoWheels.setPower(gamepad2.right_trigger);
-//        }
-//       //else if (gamepad2.left_trigger>0.1){
-//            geckoWheels.setPower(-gamepad2.left_trigger);
-//        }
-//        else {
-//            geckoWheels.setPower(0.0);
-//
-//        }
-//
-//
-//        if (gamepad2.dpad_up){
-//            servoDeposit.setPower(1);
-//
-//        }
-//        if(gamepad2.dpad_left){
-//            servoDeposit.setPower(0);
-//        }
-//        if(gamepad2.dpad_down){
-//            servoDeposit.setPower(-1);
-//        }
-//        follower.update();
-////        telemetryM.update();
-//        if (!automatedDrive) {
-//            //Make the last parameter false for field-centric
-//            //In case the drivers want to use a "slowMode" you can scale the vectors
-//            //This is the normal version to use in the TeleOp
-//            if (!slowMode) follower.setTeleOpDrive(
-//                    -gamepad1.left_stick_y,
-//                    -gamepad1.left_stick_x,
-//                    -gamepad1.right_stick_x,
-//                    true // Robot Centric
-//            );
-//            //This is how it looks with slowMode on
-//        }
-<<<<<<< HEAD
-        telemetry.addData("Deposit Servo Position", servoDeposit.getPosition());
-        telemetry.addData("Gate Servo Position", servoIntake.getPosition());
-        telemetry.addData("Intake Power Left", intake_2.getPower());
-        telemetry.addData("Intake Power Right", intake_3.getPower());
-        telemetry.addData("Deposit Power",deposit.getPower());
-        telemetry.addData("x", x);
-        telemetry.addData("y", y);
-        telemetry.addData("heading", follower.getPose().getHeading());
-        telemetry.addData("Distance to Blue Scoring", BDistance);
-        telemetry.addData("Distance to Red Scoring", RDisance);
-        telemetry.update();
-=======
-                telemetry.addData("Deposit Servo Position", servoDeposit.getPosition());
-                telemetry.addData("Gate Servo Position", servoIntake.getPosition());
-                telemetry.addData("Intake Power Left", intake_2.getPower());
-                telemetry.addData("Intake Power Right", intake_3.getPower());
-                telemetry.addData("Deposit Power", deposit.getPower());
-                telemetry.addData("x", follower.getPose().getX());
-                telemetry.addData("y", follower.getPose().getY());
-                telemetry.addData("heading", follower.getPose().getHeading());
-                telemetry.addData("Servo Intake Position", servoIntake.getPosition());
-                telemetry.update();
->>>>>>> 5a055f0a784bf2972d2dc0910d3fb1e26b27126d
-//
-//
-//        telemetryM.debug("position", follower.getPose());
-//        telemetryM.debug("velocity", follower.getVelocity());
-//        telemetryM.debug("automatedDrive", automatedDrive);
-            }
-        }
+        telemetryM.debug("position", follower.getPose());
+        telemetryM.debug("velocity", follower.getVelocity());
+        telemetryM.debug("automatedDrive", automatedDrive);
     }
+}
