@@ -134,6 +134,7 @@ class LocalizationTest extends OpMode {
         telemetryM.debug("This will print your robot's position to telemetry while "
                 + "allowing robot control through a basic mecanum drive on gamepad 1.");
         telemetryM.update(telemetry);
+        //follower.setStartingPose(new Pose(36,12, Math.toRadians(90)));
         follower.update();
         drawCurrent();
     }
@@ -141,6 +142,7 @@ class LocalizationTest extends OpMode {
     @Override
     public void start() {
         follower.startTeleopDrive();
+        follower.setStartingPose(new Pose(36,12, Math.toRadians(90)));
         follower.update();
     }
 
@@ -152,10 +154,16 @@ class LocalizationTest extends OpMode {
     public void loop() {
         follower.setTeleOpDrive(-0.8*gamepad1.left_stick_y, 0.8*gamepad1.left_stick_x, -0.8*gamepad1.right_stick_x, true);
         follower.update();
+        double BDistance =0;
+
+        BDistance = Math.sqrt(
+                                Math.pow((follower.getPose().getX()-12), 2) +
+                                        Math.pow((follower.getPose().getY()-132), 2));
 
         telemetryM.debug("x:" + follower.getPose().getX());
         telemetryM.debug("y:" + follower.getPose().getY());
         telemetryM.debug("heading:" + follower.getPose().getHeading());
+        telemetryM.debug("Distance:" + BDistance);
         telemetryM.debug("total heading:" + follower.getTotalHeading());
         telemetryM.update(telemetry);
 
@@ -1183,7 +1191,7 @@ class Circle extends OpMode {
  * @author Lazar - 19234
  * @version 1.1, 5/19/2025
  */
-class Drawing {
+class Drawing{
     public static final double ROBOT_RADIUS = 9; // woah
     private static final FieldManager panelsField = PanelsField.INSTANCE.getField();
 

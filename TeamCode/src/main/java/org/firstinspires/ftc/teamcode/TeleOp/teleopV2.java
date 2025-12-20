@@ -29,6 +29,7 @@ import java.util.function.Supplier;
 
 @TeleOp(name="teleopV2")
 public class teleopV2 extends OpMode {
+    private int D;
 
     private Servo servoIntake;
     private Servo servoDeposit;
@@ -37,17 +38,18 @@ public class teleopV2 extends OpMode {
     private DcMotor intake_2;
     private DcMotor deposit;
     private DcMotor intake_3;
-    private Follower follower;
+    private static Follower follower;
     public static Pose startingPose; //See ExampleAuto to understand how to use this
     private boolean automatedDrive;
     private Supplier<PathChain> pathChain;
     private TelemetryManager telemetryM;
     private boolean slowMode = false;
     private double slowModeMultiplier = 0.5;
+
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
+        follower.setStartingPose(new Pose(36,12, 90));
         follower.update();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
@@ -62,6 +64,7 @@ public class teleopV2 extends OpMode {
 
     }
     @Override
+
     public void start() {
         //The parameter controls whether the Follower should use break mode on the motors (using it is recommended).
         //In order to use float mode, add .useBrakeModeInTeleOp(true); to your Drivetrain Constants in Constant.java (for Mecanum)
@@ -72,8 +75,14 @@ public class teleopV2 extends OpMode {
     public void loop() {
         SleepTimer.reset();
         //Call this once per loop
-follower.update();
-
+        follower.update();
+        Pose pose = follower.getPose();
+        double x = pose.getX();
+        double y = pose.getY();
+        double targetX = 12;
+        double targetY = 132;
+        double BDistance = Math.sqrt(Math.pow((x-12),2) + Math.pow(y-132, 2));
+        double RDisance = Math.sqrt(Math.pow((x-132),2) + Math.pow(y-132, 2));
 
         follower.setTeleOpDrive(
                 -gamepad1.left_stick_y,
@@ -81,44 +90,41 @@ follower.update();
                 -gamepad1.right_stick_x,
                 true // Robot Centric
         );
+
         if(gamepad1.right_bumper){
             intake_2.setPower(-0.8);
             intake_3.setPower(0.8);
         }
-
         else if(gamepad1.left_bumper){
             intake_2.setPower(0.8);
             intake_3.setPower(-0.8);
-
         }
-
         else {
             intake_2.setPower(0.0);
             intake_3.setPower(0.0);
-
-
         }
+
         if(gamepad2.right_trigger>0.1){
-            deposit.setPower(-0.8*(gamepad2.right_trigger));
-    }
+            deposit.setPower(-0.75*(gamepad2.right_trigger));
+        }
         else {
             deposit.setPower(0.0);
-
         }
+
         if(gamepad2.dpad_up){
             servoDeposit.setPosition(0.8);
-            while (SleepTimer.milliseconds()<150)
-            {
-                telemetry.update();
+            while (SleepTimer.milliseconds()<150) {
+               telemetry.update();
             }
+        }
 
-        }
-        else if(gamepad2.dpad_down) {
+        if(gamepad2.dpad_down) {
             servoDeposit.setPosition(0.3);
-            while (SleepTimer.milliseconds() < 150) {
+            while(SleepTimer.milliseconds()<150) {
                 telemetry.update();
             }
         }
+
         if(gamepad2.b) {
             servoIntake.setPosition(0.1);
             while(SleepTimer.milliseconds()<150) {
@@ -182,9 +188,11 @@ follower.update();
         telemetry.addData("Intake Power Left", intake_2.getPower());
         telemetry.addData("Intake Power Right", intake_3.getPower());
         telemetry.addData("Deposit Power",deposit.getPower());
-        telemetry.addData("x", follower.getPose().getX());
-        telemetry.addData("y", follower.getPose().getY());
+        telemetry.addData("x", x);
+        telemetry.addData("y", y);
         telemetry.addData("heading", follower.getPose().getHeading());
+        telemetry.addData("Distance to Blue Scoring", BDistance);
+        telemetry.addData("Distance to Red Scoring", RDisance);
         telemetry.update();
 //
 //
