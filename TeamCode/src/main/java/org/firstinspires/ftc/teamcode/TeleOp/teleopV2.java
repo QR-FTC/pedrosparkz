@@ -49,7 +49,7 @@ public class teleopV2 extends OpMode {
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(36,12, 90));
+        follower.setStartingPose(new Pose(36, 12, 90));
         follower.update();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
@@ -59,10 +59,11 @@ public class teleopV2 extends OpMode {
         servoDeposit = hardwareMap.get(Servo.class, "servoDeposit");
         servoIntake = hardwareMap.get(Servo.class, "servoIntake");
         intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
-        intake_2= hardwareMap.get(DcMotor.class, "intake_2");
+        intake_2 = hardwareMap.get(DcMotor.class, "intake_2");
         deposit = hardwareMap.get(DcMotor.class, "depositMotor");
 
     }
+
     @Override
 
     public void start() {
@@ -71,149 +72,100 @@ public class teleopV2 extends OpMode {
         //If you don't pass anything in, it uses the default (false)
         follower.startTeleopDrive();
     }
+
     @Override
     public void loop() {
         SleepTimer.reset();
         //Call this once per loop
         follower.update();
-<<<<<<< HEAD
         Pose pose = follower.getPose();
+        double t = 2;
+        double d=0.096;
         double x = pose.getX();
         double y = pose.getY();
         double targetX = 12;
         double targetY = 132;
-        double BDistance = Math.sqrt(Math.pow((x-12),2) + Math.pow(y-132, 2));
-        double RDisance = Math.sqrt(Math.pow((x-132),2) + Math.pow(y-132, 2));
-=======
-
->>>>>>> 5a055f0a784bf2972d2dc0910d3fb1e26b27126d
-
+        double BDistance = Math.sqrt(Math.pow((x - 12), 2) + Math.pow(y - 132, 2));
+        double RDistance = Math.sqrt(Math.pow((x - 132), 2) + Math.pow(y - 132, 2));
+        double RVelocity = ((2*RDistance)/(39.37*t));
+        double BVelocity = ((2*BDistance)/(39.37*t));
+        double BRPM = (60*BVelocity)/(Math.PI*d);
+        double RRPM = (60*RVelocity) / (Math.PI*d);
+        double r = RRPM/3400;
+        double b = BRPM/3400;
         follower.setTeleOpDrive(
                 -gamepad1.left_stick_y,
                 -gamepad1.left_stick_x,
                 -gamepad1.right_stick_x,
                 true // Robot Centric
         );
-<<<<<<< HEAD
 
-        if(gamepad1.right_bumper){
-            intake_2.setPower(-0.8);
-            intake_3.setPower(0.8);
-        }
-        else if(gamepad1.left_bumper){
-            intake_2.setPower(0.8);
-            intake_3.setPower(-0.8);
-        }
-        else {
-=======
-        if (gamepad1.right_bumper) {
-            intake_2.setPower(0.8);
-            intake_3.setPower(-0.8);
-        } else if (gamepad1.left_bumper) {
-            intake_2.setPower(-0.8);
-            intake_3.setPower(0.8);
 
-        } else {
->>>>>>> 5a055f0a784bf2972d2dc0910d3fb1e26b27126d
-            intake_2.setPower(0.0);
-            intake_3.setPower(0.0);
-        }
-<<<<<<< HEAD
+            if (gamepad1.right_bumper) {
+                intake_2.setPower(0.8);
+                intake_3.setPower(-0.8);
+            } else if (gamepad1.left_bumper) {
+                intake_2.setPower(-0.8);
+                intake_3.setPower(0.8);
 
-        if(gamepad2.right_trigger>0.1){
-            deposit.setPower(-0.75*(gamepad2.right_trigger));
-        }
-        else {
-=======
-        if (gamepad2.right_trigger > 0.1) {
-            deposit.setPower(gamepad1.right_trigger);
-        } else if (gamepad2.left_trigger > 0.1) {
-            deposit.setPower(-gamepad1.left_trigger);
-        } else {
->>>>>>> 5a055f0a784bf2972d2dc0910d3fb1e26b27126d
-            deposit.setPower(0.0);
-        }
-<<<<<<< HEAD
+            } else {
 
-        if(gamepad2.dpad_up){
-            servoDeposit.setPosition(0.8);
-            while (SleepTimer.milliseconds()<150) {
-               telemetry.update();
-=======
-        if (gamepad2.dpad_up) {
-
-            servoDeposit.setPosition(0.8);
-
-            servoDeposit.setPosition(servoDeposit.getPosition() + 0.1);
-
-            while (SleepTimer.milliseconds() < 150) {
-                telemetry.update();
->>>>>>> 5a055f0a784bf2972d2dc0910d3fb1e26b27126d
+                intake_2.setPower(0.0);
+                intake_3.setPower(0.0);
             }
-        }
 
-<<<<<<< HEAD
-        if(gamepad2.dpad_down) {
-=======
-        } else if (gamepad2.dpad_down) {
->>>>>>> 5a055f0a784bf2972d2dc0910d3fb1e26b27126d
-            servoDeposit.setPosition(0.3);
-            while(SleepTimer.milliseconds()<150) {
-                telemetry.update();
-            }
-        }
-<<<<<<< HEAD
 
-        if(gamepad2.b) {
-            servoIntake.setPosition(0.1);
-            while(SleepTimer.milliseconds()<150) {
-                telemetry.update();
-            }
-        }
-        else if(gamepad2.a) {
-            servoIntake.setPosition(0.2);
-            while(SleepTimer.milliseconds()<150) {
-                telemetry.update();
-            }
-        }
-        if(gamepad2.x) {
-            servoDeposit.setPosition(0.3);
-            servoIntake.setPosition(0.2);
-            while(SleepTimer.milliseconds()<150) {
-                telemetry.update();
-            }
-        }
-=======
-        if (gamepad2.b) {
-            servoIntake.setPosition(servoIntake.getPosition() - 0.1);
-            while (SleepTimer.milliseconds() < 150) {
-                telemetry.update();
-            }
-        } else if (gamepad2.a) {
-            servoIntake.setPosition(servoIntake.getPosition() + 0.1);
-            while (SleepTimer.milliseconds() < 150) {
-                telemetry.update();
->>>>>>> 5a055f0a784bf2972d2dc0910d3fb1e26b27126d
+            if (gamepad2.right_trigger > 0.1) {
+                deposit.setPower(-0.75 * (gamepad2.right_trigger));
+            } else {
+                deposit.setPower(0.0);
 
-       if (gamepad2.dpad_down) {
-                    servoDeposit.setPosition(servoDeposit.getPosition() - 0.1);
+            }
+
+                if (gamepad2.dpad_up) {
+                    servoDeposit.setPosition(0.8);
                     while (SleepTimer.milliseconds() < 150) {
                         telemetry.update();
                     }
-                    if (gamepad2.b) {
-                        servoIntake.setPosition(servoIntake.getPosition() - 0.1);
-                        while (SleepTimer.milliseconds() < 150) {
-                            telemetry.update();
-                        }
-                    }
-                    if (gamepad2.a) {
-                        servoIntake.setPosition(servoIntake.getPosition() + 0.1);
-                        while (SleepTimer.milliseconds() < 150) {
-                            telemetry.update();
-                        }
-
-                    }
                 }
+                if(gamepad1.y) {
+                    deposit.setPower(r);
+
+                }
+                if(gamepad1.x) {
+                    deposit.setPower(b);
+                }
+
+//<<<<<
+                         else if (gamepad2.dpad_down) {
+//>>>>>>>5 a055f0a784bf2972d2dc0910d3fb1e26b27126d
+                            servoDeposit.setPosition(0.3);
+                            while (SleepTimer.milliseconds() < 150) {
+                                telemetry.update();
+                            }
+                        }
+//<<<<<<<HEAD
+
+                        if (gamepad2.b) {
+                            servoIntake.setPosition(0.1);
+                            while (SleepTimer.milliseconds() < 150) {
+                                telemetry.update();
+                            }
+                        } else if (gamepad2.a) {
+                            servoIntake.setPosition(0.2);
+                            while (SleepTimer.milliseconds() < 150) {
+                                telemetry.update();
+                            }
+                        }
+                        if (gamepad2.x) {
+                            servoDeposit.setPosition(0.3);
+                            servoIntake.setPosition(0.2);
+                            while (SleepTimer.milliseconds() < 150) {
+                                telemetry.update();
+                            }
+                        }
+//=======
+
 
 
 //       // if(gamepad2.right_trigger>0.1) {
@@ -252,35 +204,27 @@ public class teleopV2 extends OpMode {
 //            );
 //            //This is how it looks with slowMode on
 //        }
-<<<<<<< HEAD
-        telemetry.addData("Deposit Servo Position", servoDeposit.getPosition());
-        telemetry.addData("Gate Servo Position", servoIntake.getPosition());
-        telemetry.addData("Intake Power Left", intake_2.getPower());
-        telemetry.addData("Intake Power Right", intake_3.getPower());
-        telemetry.addData("Deposit Power",deposit.getPower());
-        telemetry.addData("x", x);
-        telemetry.addData("y", y);
-        telemetry.addData("heading", follower.getPose().getHeading());
-        telemetry.addData("Distance to Blue Scoring", BDistance);
-        telemetry.addData("Distance to Red Scoring", RDisance);
-        telemetry.update();
-=======
-                telemetry.addData("Deposit Servo Position", servoDeposit.getPosition());
-                telemetry.addData("Gate Servo Position", servoIntake.getPosition());
-                telemetry.addData("Intake Power Left", intake_2.getPower());
-                telemetry.addData("Intake Power Right", intake_3.getPower());
-                telemetry.addData("Deposit Power", deposit.getPower());
-                telemetry.addData("x", follower.getPose().getX());
-                telemetry.addData("y", follower.getPose().getY());
-                telemetry.addData("heading", follower.getPose().getHeading());
-                telemetry.addData("Servo Intake Position", servoIntake.getPosition());
-                telemetry.update();
->>>>>>> 5a055f0a784bf2972d2dc0910d3fb1e26b27126d
-//
+//<<<<<<<HEAD
+                                telemetry.addData("Deposit Servo Position", servoDeposit.getPosition());
+                                telemetry.addData("Gate Servo Position", servoIntake.getPosition());
+                                telemetry.addData("Intake Power Left", intake_2.getPower());
+                                telemetry.addData("Intake Power Right", intake_3.getPower());
+                                telemetry.addData("Deposit Power", deposit.getPower());
+                                telemetry.addData("x", x);
+                                telemetry.addData("y", y);
+                                telemetry.addData("heading", follower.getPose().getHeading());
+                                telemetry.addData("Distance to Blue Scoring", BDistance);
+                                telemetry.addData("Distance to Red Scoring", RDistance);
+                                telemetry.addData("Shoot to Red Velocity", RVelocity);
+                                telemetry.addData("Shoot to Blue Velocity", BVelocity);
+                                telemetry.update();
+//=======
+
 //
 //        telemetryM.debug("position", follower.getPose());
 //        telemetryM.debug("velocity", follower.getVelocity());
 //        telemetryM.debug("automatedDrive", automatedDrive);
-            }
-        }
+
     }
+}
+
