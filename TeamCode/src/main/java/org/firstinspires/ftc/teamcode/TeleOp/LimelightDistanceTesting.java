@@ -15,14 +15,13 @@ public class LimelightDistanceTesting extends OpMode {
     private Limelight3A limelight;
     private IMU imu;
 
-    // ===== TUNE THESE =====
+    // ⚠ SET REAL VALUES BEFORE MATCH
     private static final double LIMELIGHT_MOUNT_ANGLE_DEG = 25.0;
-    private static final double LIMELIGHT_LENS_HEIGHT_IN = 20.0;
-    private static final double TARGET_HEIGHT_IN = 60.0;
+    private static final double LIMELIGHT_LENS_HEIGHT_IN = 7.5;
+    private static final double TARGET_HEIGHT_IN = 2.5;
 
-    // Minimum target area to accept (filters grains/noise)
     private static final double MIN_TA = 0.5;
-    // =====================
+    private static final double MIN_ANGLE_DEG = 5.0;
 
     @Override
     public void init() {
@@ -32,17 +31,15 @@ public class LimelightDistanceTesting extends OpMode {
 
         IMU.Parameters imuParams = new IMU.Parameters(
                 new RevHubOrientationOnRobot(
-                        RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                        RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+                        RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                        RevHubOrientationOnRobot.UsbFacingDirection.UP
                 )
         );
         imu.initialize(imuParams);
 
-        // Force pipeline 1
-        limelight.pipelineSwitch(1);
+        limelight.pipelineSwitch(0);
 
-        telemetry.addLine("FTC Limelight Ready");
-        telemetry.addLine("Pipeline: 1");
+        telemetry.addLine("Limelight Distance Ready");
         telemetry.update();
     }
 
@@ -54,47 +51,52 @@ public class LimelightDistanceTesting extends OpMode {
     @Override
     public void loop() {
 
-        // Update robot yaw for Limelight pose calculations
+        // Update yaw for Limelight
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         limelight.updateRobotOrientation(orientation.getYaw());
 
         LLResult llResult = limelight.getLatestResult();
 
-        if (llResult != null && llResult.isValid()) {
+        telemetry.addLine("=== LIMELIGHT DEBUG ===");
 
-            double ta = llResult.getTa();
-
-            // ❌ Reject small blobs (noise / grains)
-            if (ta < MIN_TA) {
-                telemetry.addLine("Target rejected (TA too small)");
-                telemetry.addData("TA", ta);
-                telemetry.update();
-                return;
-            }
-
-            double ty = llResult.getTy();
-
-            double angleToTargetDeg = LIMELIGHT_MOUNT_ANGLE_DEG + ty;
-            double angleToTargetRad = Math.toRadians(angleToTargetDeg);
-
-            double distanceInches =
-                    (TARGET_HEIGHT_IN - LIMELIGHT_LENS_HEIGHT_IN)
-                            / Math.tan(angleToTargetRad);
-
-            // ✅ Ensure distance is never negative
-            distanceInches = Math.abs(distanceInches);
-
-            telemetry.addData("Pipeline", 1);
-            telemetry.addData("Tx (deg)", llResult.getTx());
-            telemetry.addData("Ty (deg)", ty);
-            telemetry.addData("TA", ta);
-            telemetry.addData("Angle (deg)", angleToTargetDeg);
-            telemetry.addData("Distance (in)", distanceInches);
-            telemetry.addData("Distance (ft)", distanceInches / 12.0);
-
-        } else {
+        if (llResult == null || !llResult.isValid()) {
             telemetry.addLine("No valid target");
+            telemetry.update();
+            return;
         }
+
+        double tx = llResult.getTx();
+        double ty = llResult.getTy();
+        double ta = llResult.getTa();
+
+        telemetry.addData("Tx", tx);
+        telemetry.addData("Ty", ty);
+        telemetry.addData("TA", ta);
+
+        // ----- TA FILTER -----
+        if (ta < MIN_TA) {
+            telemetry.addLine("Status: Rejected (TA too small)");
+            telemetry.update();
+            return;
+        }
+
+        double angleToTargetDeg = LIMELIGHT_MOUNT_ANGLE_DEG + ty;
+        telemetry.addData("Angle (deg)", angleToTargetDeg);
+
+        // ----- ANGLE FILTER -----
+        if (Math.abs(angleToTargetDeg) < MIN_ANGLE_DEG) {
+            telemetry.addLine("Status: Rejected (Angle too small)");
+            telemetry.update();
+            return;
+        }
+
+        double distanceInches =
+                (TARGET_HEIGHT_IN - LIMELIGHT_LENS_HEIGHT_IN)
+                        / Math.tan(Math.toRadians(angleToTargetDeg));
+
+        telemetry.addLine("Status: VALID");
+        telemetry.addData("Distance (in)", distanceInches);
+        telemetry.addData("Distance (ft)", distanceInches / 12.0);
 
         telemetry.update();
     }
