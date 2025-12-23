@@ -79,7 +79,7 @@ public class teleopV2 extends OpMode {
         //Call this once per loop
         follower.update();
         Pose pose = follower.getPose();
-        double t = 2;
+        double t =2;
         double d=0.096;
         double x = pose.getX();
         double y = pose.getY();
