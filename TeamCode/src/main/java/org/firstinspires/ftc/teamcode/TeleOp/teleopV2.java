@@ -4,27 +4,18 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
-import com.bylazar.telemetry.TelemetryManager;
-import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.Path;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-import java.util.Timer;
 import java.util.function.Supplier;
 
 @TeleOp(name="teleopV2")
@@ -130,6 +121,7 @@ public class teleopV2 extends OpMode {
                 }
                 if(gamepad1.y) {
                     deposit.setPower(r);
+                    double power = getRPM(8800, 35);
 
                 }
                 if(gamepad1.x) {
@@ -226,5 +218,12 @@ public class teleopV2 extends OpMode {
 //        telemetryM.debug("automatedDrive", automatedDrive);
 
     }
-}
 
+    public double getRPM(double distance, double theta){
+
+        double output = (9806.94*distance*distance) / (2* Math.pow(Math.cos(theta), 2)*(distance*Math.tan(theta)-812.8));
+        output = Math.sqrt(output);
+        double RPM = (60*output) / (2*Math.PI*96);
+        return RPM;
+    }
+}
