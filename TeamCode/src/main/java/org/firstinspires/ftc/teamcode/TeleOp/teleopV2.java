@@ -27,7 +27,14 @@ import java.util.function.Supplier;
 
 @TeleOp(name="teleopV2")
 public class teleopV2 extends OpMode {
+<<<<<<< HEAD
     private CRServo servoDeposit;
+=======
+
+    private Servo servoIntake;
+    private Servo servoDeposit;
+    private ElapsedTime SleepTimer = new ElapsedTime();
+>>>>>>> 45599ed4aa6601f2b8df292313b5c40122f551d5
     private DcMotor geckoWheels;
     private DcMotor intake_2;
     private DcMotor intake_3;
@@ -51,6 +58,7 @@ public class teleopV2 extends OpMode {
                 .build();
         servoDeposit = hardwareMap.get(CRServo.class, "Servo_Deposit");
         intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
+<<<<<<< HEAD
         intake_2= hardwareMap.get(DcMotor.class, "Intake_2");
         geckoWheels = hardwareMap.get(DcMotor.class, "Deposit");
         //while (opModeIsActive()) {
@@ -58,6 +66,13 @@ public class teleopV2 extends OpMode {
 
 
     }
+=======
+        intake_2 = hardwareMap.get(DcMotor.class, "intake_2");
+        deposit = hardwareMap.get(DcMotor.class, "depositMotor");
+
+    }
+
+>>>>>>> 45599ed4aa6601f2b8df292313b5c40122f551d5
     @Override
     public void start() {
         //The parameter controls whether the Follower should use break mode on the motors (using it is recommended).
@@ -65,6 +80,7 @@ public class teleopV2 extends OpMode {
         //If you don't pass anything in, it uses the default (false)
         follower.startTeleopDrive();
     }
+
     @Override
     public void loop() {
         //Call this once per loop
@@ -85,6 +101,7 @@ public class teleopV2 extends OpMode {
             servoDeposit.setPower(-1);
         }
         follower.update();
+<<<<<<< HEAD
         telemetryM.update();
         if (!automatedDrive) {
             //Make the last parameter false for field-centric
@@ -129,5 +146,120 @@ public class teleopV2 extends OpMode {
         telemetryM.debug("position", follower.getPose());
         telemetryM.debug("velocity", follower.getVelocity());
         telemetryM.debug("automatedDrive", automatedDrive);
+=======
+
+
+        follower.setTeleOpDrive(
+                -gamepad1.left_stick_y,
+                -gamepad1.left_stick_x,
+                -gamepad1.right_stick_x,
+                true // Robot Centric
+        );
+        if (gamepad1.right_bumper) {
+            intake_2.setPower(0.8);
+            intake_3.setPower(-0.8);
+        } else if (gamepad1.left_bumper) {
+            intake_2.setPower(-0.8);
+            intake_3.setPower(0.8);
+
+        } else {
+            intake_2.setPower(0.0);
+            intake_3.setPower(0.0);
+
+
+        }
+        if (gamepad2.right_trigger > 0.1) {
+            deposit.setPower(-0.6*gamepad1.right_trigger);
+        }
+
+        else {
+            deposit.setPower(0.0);
+
+        }
+        if (gamepad2.dpad_up) {
+
+            servoDeposit.setPosition(0.8);
+
+            while (SleepTimer.milliseconds() < 150) {
+                telemetry.update();
+            }
+
+        } else if (gamepad2.dpad_down) {
+            servoDeposit.setPosition(0.3);
+            while (SleepTimer.milliseconds() < 150) {
+                telemetry.update();
+            }
+        }
+
+                    if (gamepad2.b) {
+                        servoIntake.setPosition(0.1);
+                        while (SleepTimer.milliseconds() < 150) {
+                            telemetry.update();
+                        }
+                    }
+                    if (gamepad2.a) {
+                        servoIntake.setPosition(0.2);
+                        while (SleepTimer.milliseconds() < 150) {
+                            telemetry.update();
+                        }
+
+                    }
+
+
+
+//       // if(gamepad2.right_trigger>0.1) {
+//        //    geckoWheels.setPower(gamepad2.right_trigger);
+//        }
+//       //else if (gamepad2.left_trigger>0.1){
+//            geckoWheels.setPower(-gamepad2.left_trigger);
+//        }
+//        else {
+//            geckoWheels.setPower(0.0);
+//
+//        }
+//
+//
+//        if (gamepad2.dpad_up){
+//            servoDeposit.setPower(1);
+//
+//        }
+//        if(gamepad2.dpad_left){
+//            servoDeposit.setPower(0);
+//        }
+//        if(gamepad2.dpad_down){
+//            servoDeposit.setPower(-1);
+//        }
+//        follower.update();
+////        telemetryM.update();
+//        if (!automatedDrive) {
+//            //Make the last parameter false for field-centric
+//            //In case the drivers want to use a "slowMode" you can scale the vectors
+//            //This is the normal version to use in the TeleOp
+//            if (!slowMode) follower.setTeleOpDrive(
+//                    -gamepad1.left_stick_y,
+//                    -gamepad1.left_stick_x,
+//                    -gamepad1.right_stick_x,
+//                    true // Robot Centric
+//            );
+//            //This is how it looks with slowMode on
+//        }
+                telemetry.addData("Deposit Servo Position", servoDeposit.getPosition());
+                telemetry.addData("Gate Servo Position", servoIntake.getPosition());
+                telemetry.addData("Intake Power Left", intake_2.getPower());
+                telemetry.addData("Intake Power Right", intake_3.getPower());
+                telemetry.addData("Deposit Power", deposit.getPower());
+                telemetry.addData("x", follower.getPose().getX());
+                telemetry.addData("y", follower.getPose().getY());
+                telemetry.addData("heading", follower.getPose().getHeading());
+                telemetry.addData("Servo Intake Position", servoIntake.getPosition());
+                telemetry.update();
+//
+//
+//        telemetryM.debug("position", follower.getPose());
+//        telemetryM.debug("velocity", follower.getVelocity());
+//        telemetryM.debug("automatedDrive", automatedDrive);
+            }
+
+>>>>>>> 45599ed4aa6601f2b8df292313b5c40122f551d5
     }
 }
