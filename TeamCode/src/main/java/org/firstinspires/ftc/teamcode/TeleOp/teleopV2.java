@@ -44,6 +44,7 @@ public class teleopV2 extends OpMode {
     private TelemetryManager telemetryM;
     private boolean slowMode = false;
     private double slowModeMultiplier = 0.5;
+
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
@@ -57,10 +58,11 @@ public class teleopV2 extends OpMode {
         servoDeposit = hardwareMap.get(Servo.class, "servoDeposit");
         servoIntake = hardwareMap.get(Servo.class, "servoIntake");
         intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
-        intake_2= hardwareMap.get(DcMotor.class, "intake_2");
+        intake_2 = hardwareMap.get(DcMotor.class, "intake_2");
         deposit = hardwareMap.get(DcMotor.class, "depositMotor");
 
     }
+
     @Override
     public void start() {
         //The parameter controls whether the Follower should use break mode on the motors (using it is recommended).
@@ -68,6 +70,7 @@ public class teleopV2 extends OpMode {
         //If you don't pass anything in, it uses the default (false)
         follower.startTeleopDrive();
     }
+
     @Override
     public void loop() {
         SleepTimer.reset();
@@ -95,18 +98,16 @@ public class teleopV2 extends OpMode {
 
         }
         if (gamepad2.right_trigger > 0.1) {
-            deposit.setPower(gamepad1.right_trigger);
-        } else if (gamepad2.left_trigger > 0.1) {
-            deposit.setPower(-gamepad1.left_trigger);
-        } else {
+            deposit.setPower(-0.6*gamepad1.right_trigger);
+        }
+
+        else {
             deposit.setPower(0.0);
 
         }
         if (gamepad2.dpad_up) {
 
             servoDeposit.setPosition(0.8);
-
-            servoDeposit.setPosition(servoDeposit.getPosition() + 0.1);
 
             while (SleepTimer.milliseconds() < 150) {
                 telemetry.update();
@@ -118,35 +119,21 @@ public class teleopV2 extends OpMode {
                 telemetry.update();
             }
         }
-        if (gamepad2.b) {
-            servoIntake.setPosition(servoIntake.getPosition() - 0.1);
-            while (SleepTimer.milliseconds() < 150) {
-                telemetry.update();
-            }
-        } else if (gamepad2.a) {
-            servoIntake.setPosition(servoIntake.getPosition() + 0.1);
-            while (SleepTimer.milliseconds() < 150) {
-                telemetry.update();
 
-       if (gamepad2.dpad_down) {
-                    servoDeposit.setPosition(servoDeposit.getPosition() - 0.1);
-                    while (SleepTimer.milliseconds() < 150) {
-                        telemetry.update();
-                    }
                     if (gamepad2.b) {
-                        servoIntake.setPosition(servoIntake.getPosition() - 0.1);
+                        servoIntake.setPosition(0.1);
                         while (SleepTimer.milliseconds() < 150) {
                             telemetry.update();
                         }
                     }
                     if (gamepad2.a) {
-                        servoIntake.setPosition(servoIntake.getPosition() + 0.1);
+                        servoIntake.setPosition(0.2);
                         while (SleepTimer.milliseconds() < 150) {
                             telemetry.update();
                         }
 
                     }
-                }
+
 
 
 //       // if(gamepad2.right_trigger>0.1) {
@@ -201,5 +188,5 @@ public class teleopV2 extends OpMode {
 //        telemetryM.debug("velocity", follower.getVelocity());
 //        telemetryM.debug("automatedDrive", automatedDrive);
             }
-        }
+
     }
