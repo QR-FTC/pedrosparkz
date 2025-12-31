@@ -20,7 +20,7 @@
 
     import java.util.function.Supplier;
 
-    @TeleOp(name="teleopV2")
+    @TeleOp(name="teleopV3")
     public class teleopV3 extends OpMode {
         private int D;
 
@@ -132,10 +132,12 @@
                 }
             }
 
-            telemetry.addData("Deposit Servo Position", servoDeposit.getPosition());
-            telemetry.addData("Gate Servo Position", servoIntake.getPosition());
-            telemetry.addData("Intake Power Left", intake_2.getPower());
-            telemetry.addData("Intake Power Right", intake_3.getPower());
+            //deposit.setVelocity(getRPM(getDistance(), 35));
+
+            //telemetry.addData("Deposit Servo Position", servoDeposit.getPosition());
+            //telemetry.addData("Gate Servo Position", servoIntake.getPosition());
+            //telemetry.addData("Intake Power Left", intake_2.getPower());
+            //telemetry.addData("Intake Power Right", intake_3.getPower());
             telemetry.addData("Deposit Power", deposit.getPower());
             telemetry.addData("Current X pos", follower.getPose().getX());
             telemetry.addData("Current Y Pos", follower.getPose().getY());
@@ -144,7 +146,6 @@
             telemetry.addData("Current RPM", getRPM(getDistance(), 35));
             telemetry.update();
 
-            deposit.setVelocity(getRPM(getDistance(), 35));
         }
 
         public double getDistance()
@@ -155,15 +156,15 @@
             double distanceInches = Math.sqrt(Math.pow((pose.getX() - targetX), 2) + Math.pow(pose.getY() - targetY, 2));
 
             // Converting the distance from inches to mm by multiplying by 25.4.
-            return distanceInches*25.4;
+            return distanceInches*2.54;
         }
 
 
         public double getRPM(double distance, double theta){
 
             // Gravity in mm
-            double gravityMM = 9806.94;
-            double targetHeight = 812.8;
+            double gravityMM = 980.694;
+            double targetHeight = 81.28; // 2.54 * (43 - 11 )
             double thetaRadian = Math.toRadians(theta);
 
             // G is Gravity in mm 9806.94
@@ -180,14 +181,14 @@
             telemetry.addData("Numerator", numerator);
             telemetry.addData("Denominator", denominator);
 
-            if (denominator ==0) return 0;
+            if (denominator <=0) return 0;
 
             double velocity = Math.sqrt( numerator / denominator);
 
             telemetry.addData("velocity", velocity);
 
-            double flywheelDiameter = 96;
-            return (60*velocity) / (2*Math.PI*flywheelDiameter);
+            double flywheelRadius = 4.8;
+            return (60*velocity) / (2*Math.PI*flywheelRadius);
 
         }
     }
