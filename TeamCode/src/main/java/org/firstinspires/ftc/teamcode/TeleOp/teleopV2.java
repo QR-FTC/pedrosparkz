@@ -78,12 +78,27 @@ public class teleopV2 extends OpMode {
         double targetY = 132;
         double BDistance = Math.sqrt(Math.pow((x - 12), 2) + Math.pow(y - 132, 2));
         double RDistance = Math.sqrt(Math.pow((x - 132), 2) + Math.pow(y - 132, 2));
-        double RVelocity = ((2*RDistance)/(39.37*t));
-        double BVelocity = ((2*BDistance)/(39.37*t));
+        double RVelocity = (2*RDistance)/(39.37*t);
+        double BVelocity = (2*BDistance)/(39.37*t);
         double BRPM = (60*BVelocity)/(Math.PI*d);
         double RRPM = (60*RVelocity) / (Math.PI*d);
         double r = RRPM/3400;
         double b = BRPM/3400;
+        int lastTicks = deposit.getCurrentPosition();
+        long lastTime = System.currentTimeMillis();
+
+// Inside loop()
+        int currentTicks = deposit.getCurrentPosition();
+        long currentTime = System.currentTimeMillis();
+
+        double deltaTime = (currentTime - lastTime) / 1000.0; // seconds
+        int ticksMoved = currentTicks - lastTicks;
+
+        int TICKS_PER_REV = 582; // your motor’s ticks/rev
+        double rpm = (ticksMoved / (double)TICKS_PER_REV) * (60.0 / deltaTime);
+
+        lastTicks = currentTicks;
+        lastTime = currentTime;
         follower.setTeleOpDrive(
                 -gamepad1.left_stick_y,
                 -gamepad1.left_stick_x,
@@ -126,6 +141,9 @@ public class teleopV2 extends OpMode {
                 }
                 if(gamepad1.x) {
                     deposit.setPower(b);
+                }
+                if(gamepad1.a) {
+                    deposit.setPower(1.0);
                 }
 
 //<<<<<
@@ -209,6 +227,7 @@ public class teleopV2 extends OpMode {
                                 telemetry.addData("Distance to Red Scoring", RDistance);
                                 telemetry.addData("Shoot to Red Velocity", RVelocity);
                                 telemetry.addData("Shoot to Blue Velocity", BVelocity);
+                                telemetry.addData("RPM", rpm);
                                 telemetry.update();
 //=======
 

@@ -8,14 +8,28 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
+<<<<<<< Updated upstream
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+=======
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+>>>>>>> Stashed changes
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous(name = "nearReds", group = "Examples")
+<<<<<<< Updated upstream
 public class nearRedLM3 extends OpMode {
+=======
+public class farRedLM3 extends OpMode {
+>>>>>>> Stashed changes
     boolean gateservoended2 = false;
     boolean case1Started = false;
     boolean gateservoended = false;
@@ -35,6 +49,7 @@ public class nearRedLM3 extends OpMode {
     private final Pose startPose = new Pose(120, 128, Math.toRadians(217)); // the robot will be set where the left wheels are along the lines of the beginning of the third tile of x.
 
 
+<<<<<<< Updated upstream
     private final Pose scorePose = new Pose(100, 60, Math.toRadians(45)); // left front wheel will be on this point; and its on the 2nd tile in x and fourth tile in y along y=-x.
     //    private final Pose scorePose = new Pose(86, 105, Math.toRadians(45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     private final Pose arrivingtomiddleballs = new Pose (100,60, Math.toRadians(0));
@@ -49,6 +64,22 @@ public class nearRedLM3 extends OpMode {
 
 
     PathChain scorePreload, gomiddleset, collectmiddleset,openingate,shootmiddleset, arriveset1,collectset1,shootset1, arriveset3, collectset3, scoringset3;
+=======
+    private final Pose scorePose = new Pose(86, 120, Math.toRadians(45)); // left front wheel will be on this point; and its on the 2nd tile in x and fourth tile in y along y=-x.
+    //    private final Pose scorePose = new Pose(86, 105, Math.toRadians(45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose scorepose1 = new Pose (86,80, Math.toRadians(45));
+    private final Pose pickup1Posebeg = new Pose(100, 83, Math.toRadians(0)); // Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup1Pose = new Pose(127, 83, Math.toRadians(0)); // Middle (Second Set) of Artifacts from the Spike Mark.
+    private final Pose getPickup2begPose = new Pose(103, 60, Math.toRadians(0));
+    private final Pose getGetPickup2Pose = new Pose(127, 60, Math.toRadians(0));
+
+    private final Pose getPickup3begPose = new Pose(103, 35, Math.toRadians(0));
+    private final Pose pickup3pose = new Pose(127, 35, Math.toRadians(0));
+
+
+
+    PathChain scorePreload, grabPickup1, scorePickup1a, grabPickup1b, scorePickup2,grabPickup2a,scorePickup2b,scorePickup3, grabPickub3a, grabPickup3b, strafe, removestrafe;
+>>>>>>> Stashed changes
 
     public void buildPaths() {
         /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
@@ -60,6 +91,7 @@ public class nearRedLM3 extends OpMode {
                 .addPath(new BezierLine(startPose, scorePose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
                 .build();
+<<<<<<< Updated upstream
         gomiddleset = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, arrivingtomiddleballs))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), arrivingtomiddleballs.getHeading())
@@ -72,10 +104,25 @@ public class nearRedLM3 extends OpMode {
         openingate = follower.pathBuilder()
                 .addPath(new BezierLine(collectingmiddleballs, opengate))
                 .setLinearHeadingInterpolation(collectingmiddleballs.getHeading(), opengate.getHeading())
+=======
+        grabPickup1 = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, scorepose1))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), scorepose1.getHeading())
+                .build();
+
+        strafe = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose,scorepose1))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), scorepose1.getHeading())
+                .build();
+        removestrafe = follower.pathBuilder()
+                .addPath(new BezierLine(scorepose1, scorePose))
+                .setLinearHeadingInterpolation(scorepose1.getHeading(), scorePose.getHeading())
+>>>>>>> Stashed changes
                 .build();
 
 
         /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
+<<<<<<< Updated upstream
         shootmiddleset = follower.pathBuilder()
                 .addPath(new BezierLine(opengate, scorePose))
                 .setLinearHeadingInterpolation(opengate.getHeading(), scorePose.getHeading())
@@ -107,6 +154,43 @@ public class nearRedLM3 extends OpMode {
         scoringset3 = follower.pathBuilder()
                 .addPath(new BezierLine(collectingset3, scorePose))
                 .setLinearHeadingInterpolation(collectingset3.getHeading(), scorePose.getHeading())
+=======
+        scorePickup1a = follower.pathBuilder()
+                .addPath(new BezierLine(pickup1Posebeg, pickup1Pose))
+                .setLinearHeadingInterpolation(pickup1Posebeg.getHeading(), pickup1Pose.getHeading())
+                .build();
+        /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
+        grabPickup1b = follower.pathBuilder()
+                .addPath(new BezierLine(pickup1Pose, scorePose))
+                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
+                .build();
+        /* This is our scorePickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
+        scorePickup2 = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, getPickup2begPose))
+                .setLinearHeadingInterpolation(scorePose.getHeading(),getPickup2begPose .getHeading())
+                .build();
+//                /* This is our grabPickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
+        grabPickup2a = follower.pathBuilder()
+                .addPath(new BezierLine(getPickup2begPose, getGetPickup2Pose))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), getGetPickup2Pose.getHeading())
+                .build();
+        /* This is our scorePickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
+        scorePickup2b = follower.pathBuilder()
+                .addPath(new BezierLine(getGetPickup2Pose, scorePose))
+                .setLinearHeadingInterpolation(getGetPickup2Pose.getHeading(), scorePose.getHeading())
+                .build();
+        scorePickup3 = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose, getPickup3begPose))
+                .setLinearHeadingInterpolation(scorePose.getHeading(), getPickup3begPose.getHeading())
+                .build();
+        grabPickub3a = follower.pathBuilder()
+                .addPath(new BezierLine(getPickup3begPose, pickup3pose))
+                .setLinearHeadingInterpolation(getPickup3begPose.getHeading(), pickup3pose.getHeading())
+                .build();
+        grabPickup3b = follower.pathBuilder()
+                .addPath(new BezierLine(pickup3pose, scorePose))
+                .setLinearHeadingInterpolation(pickup3pose.getHeading(), scorePose.getHeading())
+>>>>>>> Stashed changes
                 .build();
 
     }
@@ -134,8 +218,65 @@ public class nearRedLM3 extends OpMode {
                         dogTimer.resetTimer();
 // "case1Started" is used so that the timers will only start counting once the rest continues and wont reset when it runs over the code again.
                     }
+<<<<<<< Updated upstream
                     // WILL ADD SHOOTING HERE
                     // used to push the ball further if needed.
+=======
+                    // used to push the ball further if needed.
+                    shootingmotor.setPower(-0.75);
+                    if (3.50 <= catTimer.getElapsedTimeSeconds() && catTimer.getElapsedTimeSeconds() < 6.50) {
+                        intakeservo.setPosition(0.8);
+                        // it takes around 3 seconds to lift the servo fully up. the initial 3.50 seconds are for the balls to go inside and find a position within the shooter itself.
+                    }
+                    if (catTimer.getElapsedTimeSeconds() >= 6.50 && catTimer.getElapsedTimeSeconds() < 9.50) {
+                        intakeservo.setPosition(0.3);
+                        gateservo.setPosition(0.2);
+                    }
+                    if (catTimer.getElapsedTimeSeconds() >= 9.50 && catTimer.getElapsedTimeSeconds() < 9.70) {
+                        intake_2.setPower(-0.8);
+                        intake_3.setPower(0.8);
+                        arrowTimer.resetTimer();
+                    }
+                    if (catTimer.getElapsedTimeSeconds() >= 9.70 && catTimer.getElapsedTimeSeconds() < 9.75) {
+                        intake_3.setPower(0);
+                        gateservo.setPosition(0.1);
+                        intake_2.setPower(0);
+                    }
+
+
+                    // it takes around three seconds to put the lift mechanism back to ground state.
+
+//                    if (catTimer.getElapsedTimeSeconds() < 11.50 && catTimer.getElapsedTimeSeconds()>= 9.50) {
+//                        follower.followPath(strafe);
+//
+//                    }
+//                    if (catTimer.getElapsedTimeSeconds() >= 11.50 && catTimer.getElapsedTimeSeconds() < 13.50 ) {
+//                        follower.followPath(removestrafe);
+//                    }
+                    if (catTimer.getElapsedTimeSeconds() >= 10.50 && catTimer.getElapsedTimeSeconds() < 12.50) {
+                        intakeservo.setPosition(0.8);
+                        // continue the same processes for if statement one and if statement two, ball 2 is being shot
+                    }
+                    if (catTimer.getElapsedTimeSeconds() >= 12.50 && catTimer.getElapsedTimeSeconds() < 15.50) {
+                        intakeservo.setPosition(0.3);
+                        gateservo.setPosition(0.2);
+                    }
+                    if (catTimer.getElapsedTimeSeconds() >= 15.50 && catTimer.getElapsedTimeSeconds() < 15.60) {
+                        intake_2.setPower(-1);
+                        intake_3.setPower(1);
+                    }
+                    if (catTimer.getElapsedTimeSeconds() >= 15.56 && catTimer.getElapsedTimeSeconds() < 15.66) {
+                        gateservo.setPosition(0);
+                        intake_3.setPower(0);
+                        intake_2.setPower(0);
+                    }
+                    if (bowTimer.getElapsedTimeSeconds() >= 16.00 && bowTimer.getElapsedTimeSeconds() < 19.00) {
+                        intakeservo.setPosition(0.8);
+                    }
+                    if (catTimer.getElapsedTimeSeconds() == 23.00) {
+                        setPathState(2);
+                    }
+>>>>>>> Stashed changes
 
 
 //                    if(catTimer.getElapsedTimeSeconds() >= 30.00) {
@@ -156,10 +297,18 @@ public class nearRedLM3 extends OpMode {
 //                            }
 //                        }
 //                    }
+<<<<<<< Updated upstream
                     setPathState(2);
                 }
             }
             break;
+=======
+                }
+
+
+                break;
+            }
+>>>>>>> Stashed changes
             case 2: {
             /* You could check for
             - Follower State: "if(!follower.isBusy()) {}"
@@ -167,11 +316,17 @@ public class nearRedLM3 extends OpMode {
             - Robot Position: "if(follower.getPose().getX() > 36) {}"
             */
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
+<<<<<<< Updated upstream
                 if (!follower.isBusy()) {
                     follower.followPath(gomiddleset, true);
                     setPathState(3);
                     intake_2.setPower(-0.8);
                     intake_3.setPower(0.8);
+=======
+                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() >= 23.00) {
+                    follower.followPath(grabPickup1);
+                    setPathState(-1);
+>>>>>>> Stashed changes
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
 //                    follower.followPath(grabPickup1, true);
@@ -189,17 +344,30 @@ public class nearRedLM3 extends OpMode {
                 if (!follower.isBusy()) {
                     /* Grab Sample */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
+<<<<<<< Updated upstream
                     follower.followPath(collectmiddleset, true);
                     setPathState(4);
                 }
             }
             break;
             case 4:
+=======
+                    follower.followPath(scorePickup1a, true);
+                    setPathState(5);
+                    intake_2.setPower(-0.8);
+                    intake_3.setPower(0.8);
+                    dogTimer.resetTimer();
+                }
+            }
+            break;
+            case 5:
+>>>>>>> Stashed changes
             {
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if (!follower.isBusy()) {
                     /* Score Sample */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+<<<<<<< Updated upstream
                     follower.followPath(openingate, true);
                     intake_2.setPower(0);
                     intake_3.setPower(0);
@@ -275,6 +443,16 @@ public class nearRedLM3 extends OpMode {
             }
             break;
 
+=======
+                    follower.followPath(grabPickup1b, true);
+                    intake_2.setPower(0);
+                    intake_3.setPower(0);
+                    setPathState(6);
+
+                }
+            }
+            break;
+>>>>>>> Stashed changes
 //            case 4: {
 //
 //                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
@@ -359,7 +537,20 @@ public class nearRedLM3 extends OpMode {
 //                            setPathState(7);
 //                        }
 //                        break;
+<<<<<<< Updated upstream
 
+=======
+            case 10:
+                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
+                if (!follower.isBusy() && dogTimer.getElapsedTimeSeconds() > 5.00) {
+                    shootingmotor.setPower(0);
+                    /* Set the state to a Case we won't use or define, so it just stops running an new paths */
+                    setPathState(-1);
+                    dogTimer.resetTimer();
+
+                }
+                break;
+>>>>>>> Stashed changes
         }
     }
 
