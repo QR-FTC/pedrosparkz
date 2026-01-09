@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 
     @TeleOp(name="tuningshooter")
     public class PIDtunedshooter extends OpMode {
+        private ShooterCalculatons shooterCalculations;
         private DcMotorEx shooter;
         public double P = 6;
         public double I =0;
@@ -35,6 +36,7 @@ import java.util.function.Supplier;
             shooter = hardwareMap.get(DcMotorEx.class, "depositMotor");
             shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(P, I, D, F));
+            shooterCalculations = new ShooterCalculatons();
 
         }
 
@@ -49,6 +51,18 @@ import java.util.function.Supplier;
 
         @Override
         public void loop() {
+            if(gamepad1.dpadDownWasPressed()) {
+                RPM+=100;
+            }
+            if(gamepad1.dpadUpWasPressed()) {
+                RPM -= 100;
+            }
+            if(gamepad1.dpadLeftWasPressed()) {
+                RPM += 1000;
+            }
+            if(gamepad1.dpadRightWasPressed()) {
+                RPM -= 1000;
+            }
             if (gamepad1.xWasPressed()) {
                 P = P+1;
 
@@ -68,7 +82,9 @@ import java.util.function.Supplier;
             if(gamepad1.leftBumperWasPressed()) {
                 P*=10;
             }
-            shooter.setVelocity();
+
+            double ticksec = shooterCalculations.rotationsToTicks(RPM);
+            shooter.setVelocity(ticksec);
             shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(P, I, D, F));
             ;
 
@@ -85,5 +101,11 @@ import java.util.function.Supplier;
             telemetry.addData("P", P);
             telemetry.update();
 
+        }
+        public double getthetared(double x1, double y1) {
+             return Math.atan2(144-x1, 144-y1);
+        }
+        public double getthetablue(double x1, double y1) {
+            return Math.atan2(0-x1, 144-y1);
         }
 }
