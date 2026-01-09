@@ -15,7 +15,18 @@ public double rotationsToTicks(double rotationsPerMinute){
     return ticksPerSecond;
 
 }
-
+public double distanceFromRed(double robotX, double robotY){
+    double targetX = 144;
+    double targetY = 144;
+    double distance = Math.sqrt(Math.pow(targetX-robotX,2)+Math.pow(targetY-robotY,2));
+    return distance;
+}
+    public double distanceFromBlue(double robotX, double robotY){
+        double targetX = 0;
+        double targetY = 144;
+        double distance = Math.sqrt(Math.pow(targetX-robotX,2)+Math.pow(targetY-robotY,2));
+        return distance;
+    }
 
 
 }
