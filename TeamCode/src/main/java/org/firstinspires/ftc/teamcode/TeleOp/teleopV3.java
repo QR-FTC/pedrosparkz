@@ -23,20 +23,13 @@
     @TeleOp(name="teleopV3")
     public class teleopV3 extends OpMode {
         private int D;
-
-        private Servo servoIntake;
-        private Servo servoDeposit;
         private ElapsedTime SleepTimer = new ElapsedTime();
-        private DcMotor geckoWheels;
-        private DcMotor intake_2;
         private DcMotorEx deposit;
-        private DcMotor intake_3;
+        private DcMotor intake;
         private static Follower follower;
         public static Pose startingPose; //See ExampleAuto to understand how to use this
-        private boolean automatedDrive;
         private Supplier<PathChain> pathChain;
         private TelemetryManager telemetryM;
-        private boolean slowMode = false;
         private double slowModeMultiplier = 0.5;
 
         @Override
@@ -49,11 +42,8 @@
                     .addPath(new Path(new BezierLine(follower::getPose, new Pose(45, 98))))
                     .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(45), 0.8))
                     .build();
-            servoDeposit = hardwareMap.get(Servo.class, "servoDeposit"); // CH Port 5
-            servoIntake = hardwareMap.get(Servo.class, "servoIntake"); // CH Port 1
-            intake_3 = hardwareMap.get(DcMotor.class, "intake_3"); // EH Port 0
-            intake_2 = hardwareMap.get(DcMotor.class, "intake_2"); // EH port 1
-            deposit = hardwareMap.get(DcMotorEx.class, "depositMotor"); // EH port 2
+            intake = hardwareMap.get(DcMotor.class, "intake"); // EH Port 0
+            deposit = hardwareMap.get(DcMotorEx.class, "deposit"); // EH port 1
 
             // Tuned vals for P and F
             final double P = 342;
@@ -87,15 +77,11 @@
 
             // When gamepad-1 right bumper is pressed run intake 1 and 2 motors
             if (gamepad1.right_bumper) {
-                intake_2.setPower(0.8);
-                intake_3.setPower(-0.8);
+                intake.setPower(0.8);
             } else if (gamepad1.left_bumper) { // When Gamepad-1 left bumper is pressed reverse the intake motor
-                intake_2.setPower(-0.8);
-                intake_3.setPower(0.8);
-
+                intake.setPower(-0.8);
             } else { // if not stop the motor
-                intake_2.setPower(0.0);
-                intake_3.setPower(0.0);
+                intake.setPower(0.0);
             }
 
             // When gamepad-2 right trigger is pressed start deposit motor.
@@ -105,35 +91,7 @@
                 deposit.setPower(0.0);
             }
 
-            // When Gamepad-2 dpad up is pressed elevator bring the ball up.
-            if (gamepad2.dpad_up) {
-                servoDeposit.setPosition(0.8);
-                while (SleepTimer.milliseconds() < 150) {
-                    telemetry.update();
-                }
-            }
-            // When Gamepad-2 dpad down is pressed elevator comes down.
-            if (gamepad2.dpad_down) {
-                servoDeposit.setPosition(0.3);
-                while (SleepTimer.milliseconds() < 150) {
-                    telemetry.update();
-                }
-            }
-
-            if (gamepad2.b) {
-                servoIntake.setPosition(0.1);
-                while (SleepTimer.milliseconds() < 150) {
-                    telemetry.update();
-                }
-            } else if (gamepad2.a) {
-                servoIntake.setPosition(0.2);
-                while (SleepTimer.milliseconds() < 150) {
-                    telemetry.update();
-                }
-            }
-
             //deposit.setVelocity(getRPM(getDistance(), 35));
-
             //telemetry.addData("Deposit Servo Position", servoDeposit.getPosition());
             //telemetry.addData("Gate Servo Position", servoIntake.getPosition());
             //telemetry.addData("Intake Power Left", intake_2.getPower());
