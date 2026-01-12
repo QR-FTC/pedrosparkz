@@ -27,20 +27,22 @@
         private DcMotorEx deposit;
         private DcMotor intake;
         private static Follower follower;
+        private ShooterCalculatons shooterCalculatons;
         public static Pose startingPose; //See ExampleAuto to understand how to use this
         private Supplier<PathChain> pathChain;
         private TelemetryManager telemetryM;
         private double slowModeMultiplier = 0.5;
+        private boolean automatedDrive = false;
 
         @Override
         public void init() {
+            shooterCalculatons = new ShooterCalculatons();
             follower = Constants.createFollower(hardwareMap);
             follower.setStartingPose(new Pose(36, 12, 90));
             follower.update();
             telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
             pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
-                    .addPath(new Path(new BezierLine(follower::getPose, new Pose(45, 98))))
-                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(45), 0.8))
+                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, shooterCalculatons.getthetared(follower.getPose().getX(),follower.getPose().getY()), 0.8))
                     .build();
             intake = hardwareMap.get(DcMotor.class, "intake"); // EH Port 0
             deposit = hardwareMap.get(DcMotorEx.class, "deposit"); // EH port 1
@@ -66,14 +68,15 @@
             SleepTimer.reset();
             //Call this once per loop
             follower.update();
-
+            if (!automatedDrive){
             //Make the last parameter false for field-centric
             follower.setTeleOpDrive(
                     -gamepad1.left_stick_y,
                     -gamepad1.left_stick_x,
                     -gamepad1.right_stick_x,
                     true // Robot Centric
-            );
+
+            );}
 
             // When gamepad-1 right bumper is pressed run intake 1 and 2 motors
             if (gamepad1.right_bumper) {
@@ -83,7 +86,16 @@
             } else { // if not stop the motor
                 intake.setPower(0.0);
             }
-
+            //Automated PathFollowing
+            if (gamepad1.aWasPressed()) {
+                follower.followPath(pathChain.get());
+                automatedDrive = true;
+            }
+            //Stop automated following if the follower is done
+            if (automatedDrive && (gamepad1.bWasPressed() || !follower.isBusy())) {
+                follower.startTeleopDrive();
+                automatedDrive = false;
+            }
             // When gamepad-2 right trigger is pressed start deposit motor.
             if (gamepad2.right_trigger > 0.1) {
                 deposit.setPower(-0.75 * (gamepad2.right_trigger));
