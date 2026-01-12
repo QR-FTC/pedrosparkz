@@ -27,6 +27,12 @@ public double distanceFromRed(double robotX, double robotY){
         double distance = Math.sqrt(Math.pow(targetX-robotX,2)+Math.pow(targetY-robotY,2));
         return distance;
     }
-
-
+    public double getthetared(double robotX, double robotY) {
+        return Math.atan2(144-robotY, 144-robotX);
+    }
+    public double getthetablue(double x1, double y1) {
+        return Math.atan2(0-x1, 144-y1);
+    }
 }
+
+
