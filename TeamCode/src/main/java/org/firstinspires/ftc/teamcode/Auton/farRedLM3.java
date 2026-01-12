@@ -18,6 +18,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 public class farRedLM3 extends OpMode {
     boolean gateservoended2 = false;
     boolean case1Started = false;
+    boolean case3Started = false;
+    boolean case2Started = false;
+    boolean case4Started = false;
     boolean gateservoended = false;
 
     private Follower follower;
@@ -35,7 +38,7 @@ public class farRedLM3 extends OpMode {
     private final Pose startPose = new Pose(88, 8, Math.toRadians(90)); // the robot will be set where the left wheels are along the lines of the beginning of the third tile of x.
 
 
-    private final Pose scorePose = new Pose(100, 60, Math.toRadians(45)); // left front wheel will be on this point; and its on the 2nd tile in x and fourth tile in y along y=-x.
+    private final Pose scorePose = new Pose(86, 120, Math.toRadians(45)); // left front wheel will be on this point; and its on the 2nd tile in x and fourth tile in y along y=-x.
     //    private final Pose scorePose = new Pose(86, 105, Math.toRadians(45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     private final Pose arrivingtomiddleballs = new Pose (100,60, Math.toRadians(0));
     private final Pose collectingmiddleballs = new Pose(125, 60, Math.toRadians(0)); // Highest (First Set) of Artifacts from the Spike Mark.
