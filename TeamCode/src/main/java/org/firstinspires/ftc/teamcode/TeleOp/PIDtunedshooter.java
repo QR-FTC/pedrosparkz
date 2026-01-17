@@ -23,19 +23,23 @@ import java.util.function.Supplier;
     @TeleOp(name="tuningshooter")
     public class PIDtunedshooter extends OpMode {
         private ShooterCalculatons shooterCalculations;
+        private Follower follower;
+        Pose startpose = new Pose (72, 72, Math.toRadians(90));
         private DcMotorEx shooter;
-        public double P = 6;
+        public double P = 65;
         public double I =0;
         public double D =0;
-        public double F =0;
+        public double F =16.8;
         public double RPM = 0;
 
 
         @Override
         public void init() {
-            shooter = hardwareMap.get(DcMotorEx.class, "depositMotor");
+            shooter = hardwareMap.get(DcMotorEx.class, "deposit");
             shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             shooter.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(P, I, D, F));
+            follower = Constants.createFollower(hardwareMap);
+            follower.setStartingPose(startpose);
             shooterCalculations = new ShooterCalculatons();
 
         }
@@ -43,6 +47,7 @@ import java.util.function.Supplier;
         @Override
 
         public void start() {
+            follower.startTeleopDrive();
             //The parameter controls whether the Follower should use break mode on the motors (using it is recommended).
             //In order to use float mode, add .useBrakeModeInTeleOp(true); to your Drivetrain Constants in Constant.java (for Mecanum)
             //If you don't pass anything in, it uses the default (false)
@@ -51,6 +56,7 @@ import java.util.function.Supplier;
 
         @Override
         public void loop() {
+            follower.setTeleOpDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
             if(gamepad1.dpadDownWasPressed()) {
                 RPM+=100;
             }
@@ -64,23 +70,23 @@ import java.util.function.Supplier;
                 RPM -= 1000;
             }
             if (gamepad1.xWasPressed()) {
-                P = P+1;
+                F = F+1;
 
             }
             if (gamepad1.yWasPressed()) {
-                P = P-1;
+                F = F-1;
             }
             if(gamepad1.aWasPressed()) {
-                P = P + 0.1;
+                F = F + 0.1;
             }
             if (gamepad1.bWasPressed()) {
-                P-=0.1;
+                F-=0.1;
             }
             if (gamepad1.rightBumperWasPressed()) {
-                P/=10;
+                F/=10;
             }
             if(gamepad1.leftBumperWasPressed()) {
-                P*=10;
+                F*=10;
             }
 
             double ticksec = shooterCalculations.rotationsToTicks(RPM);
@@ -97,8 +103,14 @@ import java.util.function.Supplier;
             //telemetry.addData("Gate Servo Position", servoIntake.getPosition());
             //telemetry.addData("Intake Power Left", intake_2.getPower());
             //telemetry.addData("Intake Power Right", intake_3.getPower());
-            telemetry.addData("shooter velocity", shooter.getVelocity());
-            telemetry.addData("P", P);
+            follower.update();
+            telemetry.addData("RPM", RPM);
+            telemetry.addData("shooter velocity", shooterCalculations.ticksToRotations(shooter.getVelocity()));
+            telemetry.addData("F", F);
+            telemetry.addData("x", follower.getPose().getX());
+            telemetry.addData("y", follower.getPose().getY());
+            telemetry.addData("heading", follower.getPose().getHeading());
+            telemetry.addData("distance", shooterCalculations.distanceFromRed(follower.getPose().getX(), follower.getPose().getY()));
             telemetry.update();
 
         }

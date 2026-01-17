@@ -15,7 +15,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(name = "farblues", group = "Examples")
+@Autonomous(name = "farblueLM3", group = "Examples")
 public class farBlueLM3 extends OpMode {
     boolean gateservoended2 = false;
     boolean case1Started = false;
@@ -349,6 +349,8 @@ public class farBlueLM3 extends OpMode {
                     }
                     if (2.35 <= bowTimer.getElapsedTimeSeconds()) {
                         setPathState(-1);
+                        shootingmotor.setPower(0.0);
+                        intake.setPower(0.0);
                     }
                 }
             }

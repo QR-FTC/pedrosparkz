@@ -12,6 +12,7 @@
     import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
     import com.qualcomm.robotcore.hardware.DcMotor;
     import com.qualcomm.robotcore.hardware.DcMotorEx;
+    import com.qualcomm.robotcore.hardware.DcMotorSimple;
     import com.qualcomm.robotcore.hardware.PIDFCoefficients;
     import com.qualcomm.robotcore.hardware.Servo;
     import com.qualcomm.robotcore.util.ElapsedTime;
@@ -22,7 +23,12 @@
 
     @TeleOp(name="teleopV3")
     public class teleopV3 extends OpMode {
-        private int D;
+        public double P = 65;
+        public double I =0;
+        public double D =0;
+        public double F =16.8;
+        public double RPM = 0;
+        boolean autoShooting = false;
         private ElapsedTime SleepTimer = new ElapsedTime();
         private DcMotorEx deposit;
         private DcMotor intake;
@@ -38,20 +44,21 @@
         public void init() {
             shooterCalculatons = new ShooterCalculatons();
             follower = Constants.createFollower(hardwareMap);
-            follower.setStartingPose(new Pose(36, 12, 90));
+            follower.setStartingPose(new Pose(72, 72, Math.toRadians(90)));
             follower.update();
             telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
             pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
-                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, shooterCalculatons.getthetared(follower.getPose().getX(),follower.getPose().getY()), 0.8))
+                    .addPath(new Path(new BezierLine(follower::getPose, follower::getPose)))
+                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, shooterCalculatons.getthetared(follower.getPose().getX(), follower.getPose().getY()), 0.8))
                     .build();
             intake = hardwareMap.get(DcMotor.class, "intake"); // EH Port 0
             deposit = hardwareMap.get(DcMotorEx.class, "deposit"); // EH port 1
+            deposit.setDirection(DcMotorSimple.Direction.REVERSE);
+
 
             // Tuned vals for P and F
-            final double P = 342;
-            final double F = 14;
-            PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
-            deposit.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
+            deposit.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            deposit.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(P, I, D, F));
         }
 
         @Override
@@ -68,15 +75,16 @@
             SleepTimer.reset();
             //Call this once per loop
             follower.update();
-            if (!automatedDrive){
-            //Make the last parameter false for field-centric
-            follower.setTeleOpDrive(
-                    -gamepad1.left_stick_y,
-                    -gamepad1.left_stick_x,
-                    -gamepad1.right_stick_x,
-                    true // Robot Centric
+            if (!automatedDrive) {
+                //Make the last parameter false for field-centric
+                follower.setTeleOpDrive(
+                        -0.8 * gamepad1.left_stick_y,
+                        0.8 * gamepad1.left_stick_x,
+                        0.8 * gamepad1.right_stick_x,
+                        true // Robot Centric
 
-            );}
+                );
+            }
 
             // When gamepad-1 right bumper is pressed run intake 1 and 2 motors
             if (gamepad1.right_bumper) {
@@ -98,10 +106,23 @@
             }
             // When gamepad-2 right trigger is pressed start deposit motor.
             if (gamepad2.right_trigger > 0.1) {
-                deposit.setPower(-0.75 * (gamepad2.right_trigger));
-            } else { // else stop the motor
-                deposit.setPower(0.0);
+                autoShooting=true;
             }
+
+            if (gamepad2.left_trigger > 0.1) { // else stop the motor
+                autoShooting = false;
+            }
+
+            RPM = shooterCalculatons.autoshoot(follower.getPose().getX(), follower.getPose().getY(), true);
+            double ticksec = shooterCalculatons.rotationsToTicks(RPM);
+            if (autoShooting) {
+                deposit.setVelocity(ticksec);
+                deposit.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(P, I, D, F));
+            }
+            else {
+                deposit.setPower(0);
+            }
+
 
             //deposit.setVelocity(getRPM(getDistance(), 35));
             //telemetry.addData("Deposit Servo Position", servoDeposit.getPosition());
@@ -112,53 +133,8 @@
             telemetry.addData("Current X pos", follower.getPose().getX());
             telemetry.addData("Current Y Pos", follower.getPose().getY());
             telemetry.addData("Current Heading", follower.getPose().getHeading());
-            telemetry.addData("Distance",getDistance());
-            telemetry.addData("Current RPM", getRPM(getDistance(), 35));
             telemetry.update();
 
         }
 
-        public double getDistance()
-        {
-            Pose pose = follower.getPose();
-            double targetX = 12; // 132
-            double targetY = 132; // 132
-            double distanceInches = Math.sqrt(Math.pow((pose.getX() - targetX), 2) + Math.pow(pose.getY() - targetY, 2));
-
-            // Converting the distance from inches to mm by multiplying by 25.4.
-            return distanceInches*2.54;
-        }
-
-
-        public double getRPM(double distance, double theta){
-
-            // Gravity in mm
-            double gravityMM = 980.694;
-            double targetHeight = 81.28; // 2.54 * (43 - 11 )
-            double thetaRadian = Math.toRadians(theta);
-
-            // G is Gravity in mm 9806.94
-            // d is horizontal distance from the goal to robot
-            // theta is the hood angle in degrees
-            // thetaRadian is the hood angle in radians
-            // targetHight is the height of the goal in mm
-
-            // v^2 = G*d^2/(2.cos(theta)^2(d.tan(theta)-targetHight)
-            double numerator = (gravityMM*distance*distance);
-            double denominator = (2* Math.pow(Math.cos(thetaRadian), 2)*(distance*Math.tan(thetaRadian)-targetHeight));
-
-            telemetry.addData("target Height", targetHeight);
-            telemetry.addData("Numerator", numerator);
-            telemetry.addData("Denominator", denominator);
-
-            if (denominator <=0) return 0;
-
-            double velocity = Math.sqrt( numerator / denominator);
-
-            telemetry.addData("velocity", velocity);
-
-            double flywheelRadius = 4.8;
-            return (60*velocity) / (2*Math.PI*flywheelRadius);
-
-        }
     }
