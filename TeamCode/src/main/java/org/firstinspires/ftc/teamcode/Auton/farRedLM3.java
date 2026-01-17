@@ -10,7 +10,6 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -19,7 +18,6 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 public class farRedLM3 extends OpMode {
     boolean gateservoended2 = false;
     boolean case1Started = false;
-
     boolean case3Started = false;
     boolean case2Started = false;
     boolean case4Started = false;
@@ -31,7 +29,6 @@ public class farRedLM3 extends OpMode {
     private int pathState;
     private DcMotor intake_2;
     private DcMotor intake_3;
-    private DcMotor intake;
 
     private Servo intakeservo;
     private Servo gateservo;
@@ -44,13 +41,13 @@ public class farRedLM3 extends OpMode {
     private final Pose scorePose = new Pose(86, 120, Math.toRadians(45)); // left front wheel will be on this point; and its on the 2nd tile in x and fourth tile in y along y=-x.
     //    private final Pose scorePose = new Pose(86, 105, Math.toRadians(45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     private final Pose arrivingtomiddleballs = new Pose (100,60, Math.toRadians(0));
-    private final Pose collectingmiddleballs = new Pose(120, 60, Math.toRadians(0)); // Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose collectingmiddleballs = new Pose(125, 60, Math.toRadians(0)); // Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose opengate = new Pose(129, 72, Math.toRadians(0)); // Middle (Second Set) of Artifacts from the Spike Mark.
     private final Pose arrivingtoset1 = new Pose(100, 84, Math.toRadians(0));
-    private final Pose collectingset1 = new Pose(120, 84, Math.toRadians(0));
+    private final Pose collectingset1 = new Pose(125, 84, Math.toRadians(0));
 
     private final Pose arrivingset3 = new Pose(100, 36, Math.toRadians(0));
-    private final Pose collectingset3 = new Pose(120, 36, Math.toRadians(0));
+    private final Pose collectingset3 = new Pose(125, 36, Math.toRadians(0));
 
 
 
@@ -134,25 +131,11 @@ public class farRedLM3 extends OpMode {
 
             case 1: {
                 if (!follower.isBusy()) {
-                    if (!case2Started) {
-                        case2Started = true;
+                    if (!case1Started) {
+                        case1Started = true;
+                        catTimer.resetTimer();
                         dogTimer.resetTimer();
 // "case1Started" is used so that the timers will only start counting once the rest continues and wont reset when it runs over the code again.
-                    }
-                    if (0.00 <= dogTimer.getElapsedTimeSeconds() && catTimer.getElapsedTimeSeconds() < 0.3) {
-                        intake.setPower(-0.8);
-                    }
-                    if (0.25 <= dogTimer.getElapsedTimeSeconds() && catTimer.getElapsedTimeSeconds() < 0.35) {
-                        intake.setPower(0.0);
-                        shootingmotor.setPower(-0.7);
-                    }
-                    if (0.35 <= dogTimer.getElapsedTimeSeconds() && catTimer.getElapsedTimeSeconds() < 2.35) {
-                        intake.setPower(0.8);
-                    }
-                    if (2.35 <= dogTimer.getElapsedTimeSeconds()) {
-                        intake.setPower(0.0);
-                        shootingmotor.setPower(0.0);
-                        setPathState(6);
                     }
                     // WILL ADD SHOOTING HERE
                     // used to push the ball further if needed.
@@ -190,7 +173,8 @@ public class farRedLM3 extends OpMode {
                 if (!follower.isBusy()) {
                     follower.followPath(gomiddleset, true);
                     setPathState(3);
-                    intake.setPower(0.8);
+                    intake_2.setPower(-0.8);
+                    intake_3.setPower(0.8);
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
 //                    follower.followPath(grabPickup1, true);
@@ -220,7 +204,8 @@ public class farRedLM3 extends OpMode {
                     /* Score Sample */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(openingate, true);
-                    intake.setPower(0.8);
+                    intake_2.setPower(0);
+                    intake_3.setPower(0);
                     setPathState(5);
 
                 }
@@ -230,37 +215,11 @@ public class farRedLM3 extends OpMode {
             {
                 if(!follower.isBusy()) {
                     follower.followPath(shootmiddleset, true);
-                    setPathState(15);
-                }
-
-
-                break;
-            }
-            case 15:
-            {
-                if(!follower.isBusy()) {
-                    if (!case1Started) {
-                        catTimer.resetTimer();
-                        case1Started = true;
-                    }
-                    if (0.00 <= catTimer.getElapsedTimeSeconds() && catTimer.getElapsedTimeSeconds() < 0.3) {
-                        intake.setPower(-0.8);
-                    }
-                    if (0.25 <= catTimer.getElapsedTimeSeconds() && catTimer.getElapsedTimeSeconds() < 0.35) {
-                        intake.setPower(0.0);
-                        shootingmotor.setPower(-0.7);
-                    }
-                    if (0.35 <= catTimer.getElapsedTimeSeconds() && catTimer.getElapsedTimeSeconds() < 2.35) {
-                        intake.setPower(0.8);
-                    }
-                    if (2.35 <= catTimer.getElapsedTimeSeconds()) {
-                        setPathState(6);
-                    }
+                    // WILL ADD SHOOTING HERE
+                    setPathState(6);
                 }
                 break;
             }
-
-
 
 
             case 6:
@@ -268,7 +227,8 @@ public class farRedLM3 extends OpMode {
                 if(!follower.isBusy()) {
                     follower.followPath(arriveset1, true);
                     setPathState(7);
-                    intake.setPower(0.8);
+                    intake_2.setPower(-0.8);
+                    intake_3.setPower(0.8);
                 }
                 break;
             }
@@ -284,30 +244,9 @@ public class farRedLM3 extends OpMode {
             {
                 if(!follower.isBusy()) {
                     follower.followPath(shootset1, true);
-                    setPathState(20);
-                }
-            }
-            break;
-            case 20:
-            {
-                if(!follower.isBusy()) {
-                    if(!case3Started) {
-                        case3Started = true;
-                        arrowTimer.resetTimer();
-                    }
-                    if (0.00 <= arrowTimer.getElapsedTimeSeconds() && arrowTimer.getElapsedTimeSeconds() < 0.3) {
-                        intake.setPower(-0.8);
-                    }
-                    if (0.25 <= arrowTimer.getElapsedTimeSeconds() && arrowTimer.getElapsedTimeSeconds() < 0.35) {
-                        intake.setPower(0.0);
-                        shootingmotor.setPower(-0.7);
-                    }
-                    if (0.35 <= arrowTimer.getElapsedTimeSeconds() && arrowTimer.getElapsedTimeSeconds() < 2.35) {
-                        intake.setPower(0.8);
-                    }
-                    if (2.35 <= arrowTimer.getElapsedTimeSeconds()) {
-                        setPathState(9);
-                    }
+                    intake_2.setPower(0);
+                    intake_3.setPower(0);
+                    setPathState(9);
                 }
             }
             break;
@@ -315,7 +254,8 @@ public class farRedLM3 extends OpMode {
             {
                 if(!follower.isBusy()) {
                     follower.followPath(arriveset3, true);
-                    intake.setPower(0.8);
+                    intake_3.setPower(0.8);
+                    intake_2.setPower(-0.8);
                     setPathState(10);
                 }
             }
@@ -333,33 +273,10 @@ public class farRedLM3 extends OpMode {
             {
                 if(!follower.isBusy()) {
                     follower.followPath(scoringset3, true);
-                    setPathState(25);
+                    setPathState(-1);
                 }
             }
             break;
-            case 25:
-            {
-                if(!follower.isBusy()) {
-                    if(!case4Started) {
-                        bowTimer.resetTimer();
-                    }
-                    if (0.00 <= bowTimer.getElapsedTimeSeconds() && bowTimer.getElapsedTimeSeconds() < 0.3) {
-                        intake.setPower(-0.8);
-                    }
-                    if (0.25 <= bowTimer.getElapsedTimeSeconds() && bowTimer.getElapsedTimeSeconds() < 0.35) {
-                        intake.setPower(0.0);
-                        shootingmotor.setPower(-0.7);
-                    }
-                    if (0.35 <= bowTimer.getElapsedTimeSeconds() && bowTimer.getElapsedTimeSeconds() < 2.35) {
-                        intake.setPower(0.8);
-                    }
-                    if (2.35 <= bowTimer.getElapsedTimeSeconds()) {
-                        setPathState(-1);
-                        shootingmotor.setPower(0.0);
-                        intake.setPower(0.0);
-                    }
-                }
-            }
 
 //            case 4: {
 //
@@ -487,10 +404,11 @@ public class farRedLM3 extends OpMode {
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
         follower.setStartingPose(startPose);
-        shootingmotor = hardwareMap.get(DcMotorEx.class, "deposit");;
-        intake = hardwareMap.get(DcMotorEx.class, "intake");
-        // EH port 1
-
+        shootingmotor = hardwareMap.get(DcMotor.class, "depositMotor");
+        intakeservo = hardwareMap.get(Servo.class, "servoDeposit");
+        intake_2 = hardwareMap.get(DcMotor.class, "intake_2");
+        intake_3 = hardwareMap.get(DcMotor.class, "intake_3");
+        gateservo = hardwareMap.get(Servo.class, "servoIntake");
 
     }
 
