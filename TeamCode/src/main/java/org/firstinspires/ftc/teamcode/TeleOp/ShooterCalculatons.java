@@ -41,7 +41,7 @@ public double distanceFromRed(double robotX, double robotY){
          distance = distanceFromBlue(x1,y1);
     }
         double RPM = -0.0000869661*Math.pow(distance,4)+0.0415709*Math.pow(distance,3)-7.21082*Math.pow(distance,2)+542.97966*distance-12464.0027;
-    return RPM;
+    return RPM + 70;
     }
 }
 

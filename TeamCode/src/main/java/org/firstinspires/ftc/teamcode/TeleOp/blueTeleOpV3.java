@@ -4,6 +4,7 @@
     import com.bylazar.telemetry.TelemetryManager;
     import com.pedropathing.follower.Follower;
     import com.pedropathing.geometry.BezierLine;
+    import com.pedropathing.geometry.BezierPoint;
     import com.pedropathing.geometry.Pose;
     import com.pedropathing.paths.HeadingInterpolator;
     import com.pedropathing.paths.Path;
@@ -12,16 +13,17 @@
     import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
     import com.qualcomm.robotcore.hardware.DcMotor;
     import com.qualcomm.robotcore.hardware.DcMotorEx;
+    import com.qualcomm.robotcore.hardware.DcMotorSimple;
     import com.qualcomm.robotcore.hardware.PIDFCoefficients;
-    import com.qualcomm.robotcore.hardware.Servo;
     import com.qualcomm.robotcore.util.ElapsedTime;
 
     import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
+    import java.sql.ResultSet;
     import java.util.function.Supplier;
 
-    @TeleOp(name="teleopV3")
-    public class teleopV3 extends OpMode {
+    @TeleOp(name="blueTeleopV3")
+    public class blueTeleOpV3 extends OpMode {
         private int D;
         private ElapsedTime SleepTimer = new ElapsedTime();
         private DcMotorEx deposit;
@@ -33,22 +35,27 @@
         private TelemetryManager telemetryM;
         private double slowModeMultiplier = 0.5;
         private boolean automatedDrive = false;
-
+        private boolean autoShooting = false;
+        public double RPM = 0;
         @Override
         public void init() {
             shooterCalculatons = new ShooterCalculatons();
             follower = Constants.createFollower(hardwareMap);
-            follower.setStartingPose(new Pose(36, 12, 90));
+            follower.setStartingPose(new Pose(72, 72, Math.toRadians(90)));
             follower.update();
             telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
             pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
-                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, shooterCalculatons.getthetared(follower.getPose().getX(),follower.getPose().getY()), 0.8))
+                    .addPath(new Path(new BezierPoint(follower::getPose)))
+                    .setHeadingInterpolation(HeadingInterpolator.facingPoint(0,144))
                     .build();
             intake = hardwareMap.get(DcMotor.class, "intake"); // EH Port 0
             deposit = hardwareMap.get(DcMotorEx.class, "deposit"); // EH port 1
+            deposit.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+            deposit.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
+            deposit.setDirection(DcMotorSimple.Direction.REVERSE);
             // Tuned vals for P and F
-            final double P = 342;
+            final double P = 300;
             final double F = 14;
             PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
             deposit.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
@@ -97,11 +104,24 @@
                 automatedDrive = false;
             }
             // When gamepad-2 right trigger is pressed start deposit motor.
-            if (gamepad2.right_trigger > 0.1) {
-                deposit.setPower(-0.75 * (gamepad2.right_trigger));
-            } else { // else stop the motor
-                deposit.setPower(0.0);
+            if (gamepad1.right_trigger > 0.1) {
+                autoShooting  = true;
+            } else if(gamepad1.left_trigger > 0.1) { // else stop the motor
+                autoShooting = false;
             }
+            if (autoShooting){
+                RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false);
+            } else {
+                RPM = 0;
+            }
+            double ticks = shooterCalculatons.rotationsToTicks(RPM);
+            deposit.setVelocity(ticks);
+            final double P = 300;
+            final double F = 14;
+            PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
+            deposit.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
+
+
 
             //deposit.setVelocity(getRPM(getDistance(), 35));
             //telemetry.addData("Deposit Servo Position", servoDeposit.getPosition());
@@ -112,6 +132,8 @@
             telemetry.addData("Current X pos", follower.getPose().getX());
             telemetry.addData("Current Y Pos", follower.getPose().getY());
             telemetry.addData("Current Heading", follower.getPose().getHeading());
+            telemetry.addData("targetRPM",RPM);
+            telemetry.addData("actualRPM",shooterCalculatons.ticksToRotations(deposit.getVelocity()));
             telemetry.addData("Distance",getDistance());
             telemetry.addData("Current RPM", getRPM(getDistance(), 35));
             telemetry.update();
@@ -161,4 +183,5 @@
             return (60*velocity) / (2*Math.PI*flywheelRadius);
 
         }
+
     }

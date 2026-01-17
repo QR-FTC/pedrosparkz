@@ -3,8 +3,10 @@
     import com.bylazar.telemetry.PanelsTelemetry;
     import com.bylazar.telemetry.TelemetryManager;
     import com.pedropathing.follower.Follower;
+    import com.pedropathing.geometry.BezierLine;
     import com.pedropathing.geometry.Pose;
     import com.pedropathing.paths.HeadingInterpolator;
+    import com.pedropathing.paths.Path;
     import com.pedropathing.paths.PathChain;
     import com.qualcomm.robotcore.eventloop.opmode.OpMode;
     import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -39,6 +41,8 @@
             follower.update();
             telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
             pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
+                    .addPath(new Path(new BezierLine(follower::getPose, follower::getPose)))
+
                     .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, shooterCalculatons.getthetared(follower.getPose().getX(),follower.getPose().getY()), 0.8))
                     .build();
             intake = hardwareMap.get(DcMotor.class, "intake"); // EH Port 0
