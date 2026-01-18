@@ -49,8 +49,8 @@ public class farBlueV2 extends OpMode {
     private final Pose arrivingtoset1 = new Pose(46, 84, Math.toRadians(180));
     private final Pose collectingset1 = new Pose(28, 84, Math.toRadians(180));
 
-    private final Pose arrivingset3 = new Pose(56, 40, Math.toRadians(180));
-    private final Pose collectingset3 = new Pose(35, 44, Math.toRadians(180));
+    private final Pose arrivingset3 = new Pose(56, 36, Math.toRadians(180));
+    private final Pose collectingset3 = new Pose(28, 36, Math.toRadians(180));
 
 
 
@@ -147,9 +147,9 @@ public class farBlueV2 extends OpMode {
                     if (1.75 <= dogTimer.getElapsedTimeSeconds() && catTimer.getElapsedTimeSeconds() < 4.00) {
                         intake.setPower(0.8);
                     }
-                    if (6.00 <= dogTimer.getElapsedTimeSeconds()) {
+                    if (4.00 <= dogTimer.getElapsedTimeSeconds()) {
                         intake.setPower(0.0);
-                        RPM = -1;
+                        RPM = -1000;
                         setPathState(2);
                     }
                 }
@@ -169,7 +169,7 @@ public class farBlueV2 extends OpMode {
                     }
                     follower.followPath(arriveset3, true);
                     setPathState(3);
-                    RPM = -1000;
+                    RPM = -1500;
                     intake.setPower(0.5);
                     pathTimer.resetTimer();
 
@@ -238,7 +238,7 @@ public class farBlueV2 extends OpMode {
                         intake.setPower(0.8);
                     }
                     if(catTimer.getElapsedTimeSeconds()>=6.25) {
-                        RPM = -200;
+                        RPM = -600;
                         intake.setPower(0.0);
                         setPathState(6);
 
@@ -291,11 +291,11 @@ public class farBlueV2 extends OpMode {
                         intake.setPower(0.0);
                         RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false) +90;
                     }
-                    if (4.75 <= arrowTimer.getElapsedTimeSeconds()&& arrowTimer.getElapsedTimeSeconds()<6) {
+                    if (4.75 <= arrowTimer.getElapsedTimeSeconds()&& arrowTimer.getElapsedTimeSeconds()<7) {
                         intake.setPower(0.8);
                     }
                     if(arrowTimer.getElapsedTimeSeconds()>=7) {
-                        RPM = -200;
+                        RPM = -600;
                         intake.setPower(0.0);
                         setPathState(9);
 

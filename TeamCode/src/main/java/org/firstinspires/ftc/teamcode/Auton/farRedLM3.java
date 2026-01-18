@@ -39,21 +39,21 @@ public class farRedLM3 extends OpMode {
 
 
     private Pose startPose = new Pose(56, 8, Math.toRadians(90));
-    private Pose endingposition = new Pose(62, 25, Math.toRadians(90));// the robot will be set where the left wheels are along the lines of the beginning of the third tile of x.
+    private Pose endingposition = new Pose(62, 30, Math.toRadians(90));// the robot will be set where the left wheels are along the lines of the beginning of the third tile of x.
 
 
     private  Pose scorePose = new Pose(62, 20, Math.toRadians(115));
-    private Pose scorePose2 = new Pose(62,20, Math.toRadians(121));
+    private Pose scorePose2 = new Pose(62,20, Math.toRadians(117));
     private Pose scorePose1 = new Pose(62, 20, Math.toRadians(117));// left front wheel will be on this point; and its on the 2nd tile in x and fourth tile in y along y=-x.
     //    private final Pose scorePose = new Pose(86, 105, Math.toRadians(45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private  Pose arrivingtomiddleballs = new Pose (56,64, Math.toRadians(180));
-    private  Pose collectingmiddleballs = new Pose(28, 66, Math.toRadians(180)); // Highest (First Set) of Artifacts from the Spike Mark.
+    private  Pose arrivingtomiddleballs = new Pose (56,60, Math.toRadians(180));
+    private  Pose collectingmiddleballs = new Pose(28, 62, Math.toRadians(180)); // Highest (First Set) of Artifacts from the Spike Mark.
     private Pose opengate = new Pose(15, 75, Math.toRadians(180)); // Middle (Second Set) of Artifacts from the Spike Mark.
     private  Pose arrivingtoset1 = new Pose(46, 84, Math.toRadians(180));
     private  Pose collectingset1 = new Pose(28, 84, Math.toRadians(180));
 
-    private  Pose arrivingset3 = new Pose(56, 44, Math.toRadians(180));
-    private Pose collectingset3 = new Pose(35, 48, Math.toRadians(180));
+    private  Pose arrivingset3 = new Pose(56, 36, Math.toRadians(180));
+    private Pose collectingset3 = new Pose(28, 36, Math.toRadians(180));
 
 
 
@@ -118,8 +118,8 @@ public class farRedLM3 extends OpMode {
                 .setLinearHeadingInterpolation(collectingset3.getHeading(), scorePose1.getHeading())
                 .build();
         endingpos = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose1, endingposition))
-                .setLinearHeadingInterpolation(scorePose1.getHeading(), endingposition.getHeading())
+                .addPath(new BezierLine(scorePose2, endingposition))
+                .setLinearHeadingInterpolation(scorePose2.getHeading(), endingposition.getHeading())
                 .build();
 
     }
@@ -155,7 +155,7 @@ public class farRedLM3 extends OpMode {
                     }
                     if (4.00 <= dogTimer.getElapsedTimeSeconds()) {
                         intake.setPower(0.0);
-                        RPM = -1;
+                        RPM = -1000;
                         setPathState(2);
                     }
                 }
@@ -175,7 +175,7 @@ public class farRedLM3 extends OpMode {
                     }
                     follower.followPath(arriveset3, true);
                     setPathState(3);
-                    RPM = -1000;
+                    RPM = -1300;
                   intake.setPower(0.5);
                     pathTimer.resetTimer();
 
@@ -244,7 +244,7 @@ public class farRedLM3 extends OpMode {
                         intake.setPower(0.8);
                     }
                     if(catTimer.getElapsedTimeSeconds()>=6.25) {
-                        RPM = -200;
+                        RPM = -600;
                         intake.setPower(0.0);
                         setPathState(6);
 
@@ -297,11 +297,11 @@ public class farRedLM3 extends OpMode {
                         intake.setPower(0.0);
                         RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),true) +90;
                     }
-                    if (4.75 <= arrowTimer.getElapsedTimeSeconds()&& arrowTimer.getElapsedTimeSeconds()<6) {
+                    if (4.75 <= arrowTimer.getElapsedTimeSeconds()&& arrowTimer.getElapsedTimeSeconds()<7) {
                         intake.setPower(0.8);
                     }
                     if(arrowTimer.getElapsedTimeSeconds()>=7) {
-                        RPM = -200;
+                        RPM = -600;
                         intake.setPower(0.0);
                         setPathState(9);
 
@@ -513,6 +513,7 @@ public class farRedLM3 extends OpMode {
         collectingset1=collectingset1.mirror();
         arrivingset3=arrivingset3.mirror();
         collectingset3=collectingset3.mirror();
+        endingposition = endingposition.mirror();
 
 
         dogTimer = new Timer();

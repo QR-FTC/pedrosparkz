@@ -17,8 +17,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.TeleOp.ShooterCalculatons;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(name = "nearRedLM3", group = "Examples")
-public class nearRedLM3V2 extends OpMode {
+@Autonomous(name = "nearBlueLM3", group = "Examples")
+public class nearBlueLM3V2 extends OpMode {
     boolean gateservoended2 = false;
     boolean case1Started = false;
     boolean case3Started = false;
@@ -33,11 +33,11 @@ public class nearRedLM3V2 extends OpMode {
     private Timer pathTimer, actionTimer, opmodeTimer, catTimer, dogTimer, arrowTimer, bowTimer;
     private int pathState;
     public double RPM = 0;
-    private final Pose startPose = new Pose(120, 128, Math.toRadians(217)); // the robot will be set where the left wheels are along the lines of the beginning of the third tile of x.
+    private final Pose startPose = new Pose(26.5, 129.3, Math.toRadians(317)); // the robot will be set where the left wheels are along the lines of the beginning of the third tile of x.
 
 
-    private final Pose scorePose = new Pose(86, 120, Math.toRadians(45));
-    private final Pose endingpos = new Pose(86, 110, Math.toRadians(90));
+    private final Pose scorePose = new Pose(68, 110, Math.toRadians(45));
+    private final Pose endingpos = new Pose(68, 100, Math.toRadians(90));
     // left front wheel will be on this point; and its on the 2nd tile in x and fourth tile in y along y=-x.
     //    private final Pose scorePose = new Pose(86, 105, Math.toRadians(45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     private final Pose arrivingtomiddleballs = new Pose(100, 60, Math.toRadians(0));
@@ -120,7 +120,7 @@ public class nearRedLM3V2 extends OpMode {
         switch (pathState) {
             case 0: {
                 follower.followPath(scorePreload);
-                RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),true)-30;
+                RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false)-30;
                 setPathState(1);
             }
 //            case 0: {
