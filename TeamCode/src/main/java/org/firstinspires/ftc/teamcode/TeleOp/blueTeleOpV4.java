@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 @TeleOp(name="blueTeleopV4")
 public class blueTeleOpV4 extends OpMode {
     private int D;
-    private final Pose startPose = new Pose(62, 30, Math.toRadians(90));
+    private final Pose startPose = new Pose(56, 30, Math.toRadians(90));
     private ElapsedTime SleepTimer = new ElapsedTime();
     private DcMotorEx deposit;
     private DcMotor intake;
@@ -82,7 +82,7 @@ public class blueTeleOpV4 extends OpMode {
 
         shooterCalculatons = new ShooterCalculatons();
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(72, 72, Math.toRadians(90)));
+        follower.setStartingPose(new Pose(56, 30, Math.toRadians(90)));
         follower.update();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 

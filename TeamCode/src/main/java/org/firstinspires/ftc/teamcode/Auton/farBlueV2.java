@@ -37,7 +37,7 @@ public class farBlueV2 extends OpMode {
     private int pathState;
 
 
-    private final Pose endingposition = new Pose(62, 25, Math.toRadians(90));
+    private final Pose endingposition = new Pose(56, 30, Math.toRadians(90));
     private final Pose startPose = new Pose(56, 8, Math.toRadians(90)); // the robot will be set where the left wheels are along the lines of the beginning of the third tile of x.
 
 

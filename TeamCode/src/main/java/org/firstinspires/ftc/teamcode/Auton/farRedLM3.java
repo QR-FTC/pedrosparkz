@@ -39,7 +39,7 @@ public class farRedLM3 extends OpMode {
 
 
     private Pose startPose = new Pose(56, 8, Math.toRadians(90));
-    private Pose endingposition = new Pose(62, 30, Math.toRadians(90));// the robot will be set where the left wheels are along the lines of the beginning of the third tile of x.
+    private Pose endingposition = new Pose(56, 30, Math.toRadians(90));// the robot will be set where the left wheels are along the lines of the beginning of the third tile of x.
 
 
     private  Pose scorePose = new Pose(62, 20, Math.toRadians(115));

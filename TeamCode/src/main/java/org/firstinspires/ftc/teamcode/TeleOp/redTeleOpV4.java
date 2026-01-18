@@ -30,7 +30,7 @@ import java.util.function.Supplier;
 public class redTeleOpV4 extends OpMode {
     private int D;
 
-    private Pose startPose = new Pose(62, 30, Math.toRadians(90));
+    private Pose startPose = new Pose(56, 30, Math.toRadians(90));
     private ElapsedTime SleepTimer = new ElapsedTime();
     private DcMotorEx deposit;
     private DcMotor intake;
