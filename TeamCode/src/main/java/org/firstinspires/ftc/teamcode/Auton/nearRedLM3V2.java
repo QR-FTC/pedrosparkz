@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(name = "farblues", group = "Examples")
+@Autonomous(name = "nearRedLM3", group = "Examples")
 public class nearRedLM3V2 extends OpMode {
     boolean gateservoended2 = false;
     boolean case1Started = false;

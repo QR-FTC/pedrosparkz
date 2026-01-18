@@ -22,6 +22,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import java.util.Set;
+@Disabled
 @Autonomous(name = "nearBlues", group = "Examples")
 public class nearBlues extends OpMode {
     boolean gateservoended2 = false;

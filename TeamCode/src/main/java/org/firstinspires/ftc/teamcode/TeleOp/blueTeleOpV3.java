@@ -35,19 +35,21 @@
         private TelemetryManager telemetryM;
         private double slowModeMultiplier = 0.5;
         private boolean automatedDrive = false;
+
         private boolean autoShooting = false;
         public double RPM = 0;
+        public double error  =0;
+
         @Override
+
         public void init() {
+
             shooterCalculatons = new ShooterCalculatons();
             follower = Constants.createFollower(hardwareMap);
             follower.setStartingPose(new Pose(72, 72, Math.toRadians(90)));
             follower.update();
             telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-            pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
-                    .addPath(new Path(new BezierPoint(follower::getPose)))
-                    .setHeadingInterpolation(HeadingInterpolator.facingPoint(0,144))
-                    .build();
+
             intake = hardwareMap.get(DcMotor.class, "intake"); // EH Port 0
             deposit = hardwareMap.get(DcMotorEx.class, "deposit"); // EH port 1
             deposit.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -55,8 +57,8 @@
 
             deposit.setDirection(DcMotorSimple.Direction.REVERSE);
             // Tuned vals for P and F
-            final double P = 300;
-            final double F = 14;
+            final double P = 65;
+            final double F = 16.8;
             PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
             deposit.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         }
@@ -84,22 +86,43 @@
                     true // Robot Centric
 
             );}
+            if (gamepad1.yWasPressed()) {
+                follower.setStartingPose(new Pose(134, 8, Math.toRadians(90)));
+            }
 
             // When gamepad-1 right bumper is pressed run intake 1 and 2 motors
-            if (gamepad1.right_bumper) {
+            if (gamepad1.left_bumper) {
                 intake.setPower(0.8);
-            } else if (gamepad1.left_bumper) { // When Gamepad-1 left bumper is pressed reverse the intake motor
+            } else if (gamepad1.right_bumper) { // When Gamepad-1 left bumper is pressed reverse the intake motor
                 intake.setPower(-0.8);
             } else { // if not stop the motor
                 intake.setPower(0.0);
             }
             //Automated PathFollowing
-            if (gamepad1.aWasPressed()) {
-                follower.followPath(pathChain.get());
-                automatedDrive = true;
+
+            if (gamepad1.xWasPressed()) {
+                RPM = -1000;
+                autoShooting = false;
+
             }
+
+            if (gamepad1.a) {
+                double angle = shooterCalculatons.getthetablue(follower.getPose().getX(), follower.getPose().getY());
+                error = angle - Math.toDegrees(follower.getPose().getHeading());
+                if (Math.abs(error) < 2) {
+
+                }
+                else if (error < 0 ) {
+                    follower.setTeleOpDrive(0,0,-0.15);
+                }
+                else if(error > 0 ) {
+                    follower.setTeleOpDrive(0,0,0.15);
+                }
+               automatedDrive = true;
+            }
+
             //Stop automated following if the follower is done
-            if (automatedDrive && (gamepad1.bWasPressed() || !follower.isBusy())) {
+            if (automatedDrive && (!gamepad1.a)) {
                 follower.startTeleopDrive();
                 automatedDrive = false;
             }
@@ -108,16 +131,16 @@
                 autoShooting  = true;
             } else if(gamepad1.left_trigger > 0.1) { // else stop the motor
                 autoShooting = false;
+                RPM = 0;
             }
             if (autoShooting){
                 RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false);
-            } else {
-                RPM = 0;
             }
+
             double ticks = shooterCalculatons.rotationsToTicks(RPM);
             deposit.setVelocity(ticks);
-            final double P = 300;
-            final double F = 14;
+            final double P = 65;
+            final double F = 16.8;
             PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
             deposit.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
@@ -136,6 +159,10 @@
             telemetry.addData("actualRPM",shooterCalculatons.ticksToRotations(deposit.getVelocity()));
             telemetry.addData("Distance",getDistance());
             telemetry.addData("Current RPM", getRPM(getDistance(), 35));
+            telemetry.addData("blue angle", shooterCalculatons.getthetablue(follower.getPose().getX(), follower.getPose().getY()));
+            telemetry.addData("red angle", shooterCalculatons.getthetared(follower.getPose().getX(), follower.getPose().getY()));
+            telemetry.addData("error", error);
+
             telemetry.update();
 
         }

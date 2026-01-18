@@ -28,10 +28,10 @@ public double distanceFromRed(double robotX, double robotY){
         return distance;
     }
     public double getthetared(double robotX, double robotY) {
-        return Math.atan2(144-robotY, 144-robotX);
+        return Math.toDegrees(Math.atan2(144-robotY, 144-robotX));
     }
     public double getthetablue(double x1, double y1) {
-        return Math.atan2(0-x1, 144-y1);
+        return Math.toDegrees(Math.atan2(144-y1, 0-x1));
     }
     public double autoshoot(double x1, double y1, boolean isRed){
     double distance;

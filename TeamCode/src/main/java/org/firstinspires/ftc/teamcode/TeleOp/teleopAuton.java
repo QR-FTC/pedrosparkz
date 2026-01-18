@@ -27,7 +27,7 @@ boolean lastA = false;
 
     Pose robopose = follower.getPose();
     private final Pose robopose2 = new Pose(robopose.getX(), robopose.getY(), Math.toRadians(robopose.getHeading()));
-    private final Pose ballpose2 = new Pose(robopose)
+
 
     private IMU imu;
 
@@ -98,9 +98,7 @@ boolean lastA = false;
         limelight.updateRobotOrientation(orientation.getYaw());
 
         LLResult result = null;
-        if (autoState == autoState.IDLE) {
-            if(aPressed && !lastA && lime)
-        }
+
 
         // ================= PIPELINE LOCK =================
         if (lockedPipeline == -1) {
@@ -117,7 +115,7 @@ boolean lastA = false;
                     result = r;
                 }
             }
-            if
+
 
 
 
