@@ -1,210 +1,96 @@
-// =====================================================
-//                        IMPORTS
-// =====================================================
 package org.firstinspires.ftc.teamcode.TeleOp;
+
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.IMU;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
-@TeleOp(name = "Limelight Auto Turn + Distance", group = "Vision")
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+
+@TeleOp(name = "Limelight Auto Turn", group = "Vision")
 public class balltracking extends OpMode {
 
-    // =====================================================
-    //                     HARDWARE
-    // =====================================================
-
-    // Limelight vision camera
     private Limelight3A limelight;
+    private Follower follower;
 
-    // IMU (yaw is sent to Limelight for correct math)
-    private IMU imu;
+    // ----- Tuning constants -----
+    private static final double MIN_TA          = 0.5;   // ignore blobs smaller than this (noise)
+    private static final double TX_TOLERANCE_DEG = 1.0;  // "close enough to centered" dead-band
+    private static final double TURN_KP         = 0.02;  // proportional turn gain
+    private static final double MAX_TURN_POWER  = 0.35;  // safety cap on turn power
+    private static final double APPROACH_POWER  = 0.2;   // forward power while chasing a ball
 
-    // Four mecanum motors
-    private DcMotor frontLeft;
-    private DcMotor frontRight;
-    private DcMotor backLeft;
-    private DcMotor backRight;
-
-    // =====================================================
-    //                 VISION / GEOMETRY CONSTANTS
-    // =====================================================
-
-    // Angle the Limelight is tilted upward from horizontal (degrees)
-    private static final double LIMELIGHT_MOUNT_ANGLE_DEG = 25.0;
-
-    // Height of Limelight lens from the floor (inches)
-    private static final double LIMELIGHT_LENS_HEIGHT_IN = 7.5;
-
-    // Height of the target from the floor (inches)
-    private static final double TARGET_HEIGHT_IN = 2.5;
-
-    // =====================================================
-    //                 FILTERING & TURNING
-    // =====================================================
-
-    // Reject tiny blobs
-    private static final double MIN_TA = 0.5;
-
-    // How close tx must be to zero before we stop turning
-    private static final double TX_TOLERANCE_DEG = 1.;
-
-    // Proportional turning gain
-    private static final double TURN_KP = 0.02;
-
-    // Safety cap on turning power
-    private static final double MAX_TURN_POWER = 0.35;
-
-    // =====================================================
-    //                       INIT
-    // =====================================================
+    private boolean autograb = false;
 
     @Override
     public void init() {
+        follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(new Pose(72, 72, Math.toRadians(90)));
+        follower.update();
 
-        // ---------------- DRIVE MOTORS ----------------
-        frontLeft  = hardwareMap.get(DcMotor.class, "frontLeft");
-        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
-        backLeft   = hardwareMap.get(DcMotor.class, "backLeft");
-        backRight  = hardwareMap.get(DcMotor.class, "backRight");
-
-        // Reverse right side motors (layout for our bot)
-        frontRight.setDirection(DcMotor.Direction.REVERSE);
-        backRight.setDirection(DcMotor.Direction.REVERSE);
-
-        // ---------------- LIMELIGHT ----------------
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight.pipelineSwitch(1);   // force pipeline 1
 
-        // Force pipeline 1
-        limelight.pipelineSwitch(1);
-
-        // ---------------- IMU ----------------
-        imu = hardwareMap.get(IMU.class, "imu");
-        IMU.Parameters params = new IMU.Parameters(
-                new RevHubOrientationOnRobot(
-                        RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                        RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
-                )
-        );
-        imu.initialize(params);
-
-        telemetry.addLine("Limelight Auto Turn + Distance Ready");
+        telemetry.addLine("Limelight Auto Turn Ready");
         telemetry.update();
     }
-
-    // =====================================================
-    //                      START
-    // =====================================================
 
     @Override
     public void start() {
-        // Start Limelight processing
         limelight.start();
+        follower.startTeleopDrive();
     }
-
-    // =====================================================
-    //                       LOOP
-    // =====================================================
 
     @Override
     public void loop() {
-
-        // ---------------- UPDATE YAW ----------------
-        // Keeps Limelight pose math stable
-        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
-        limelight.updateRobotOrientation(orientation.getYaw());
-
-        // Stop robot by default
-        setTurnPower(0);
-
-        // ---------------- GET LIMELIGHT RESULT ----------------
-        LLResult llResult = limelight.getLatestResult();
-
-        if (llResult == null || !llResult.isValid()) {
-            telemetry.addLine("No valid target");
-            telemetry.update();
-            return;
+        // Toggle auto-grab on/off with the d-pad
+        if (gamepad1.dpadDownWasPressed()) {
+            autograb = true;
+        } else if (gamepad1.dpadUpWasPressed()) {
+            autograb = false;
         }
 
-        // ---------------- TARGET AREA FILTER ----------------
-        double ta = llResult.getTa();
-        if (ta < MIN_TA) {
-            telemetry.addLine("Rejected: TA too small");
-            telemetry.addData("TA", ta);
-            telemetry.update();
-            return;
+        follower.update();
+
+        if (autograb) {
+            runAutoGrab();
+        } else {
+            // Normal driver control
+            follower.setTeleOpDrive(
+                    -gamepad1.left_stick_y,
+                    -gamepad1.left_stick_x,
+                    -gamepad1.right_stick_x);
         }
 
-        //                ANGLES FROM CROSSHAIRf
-
-        // Horizontal offset from crosshair (degrees)
-        // + = target right, - = target left
-        double tx = llResult.getTx();
-
-        // Vertical offset from crosshair (degrees)
-        double ty = llResult.getTy();
-
-        // True vertical angle to target (camera tilt + ty)
-        double trueVerticalAngleDeg =
-                LIMELIGHT_MOUNT_ANGLE_DEG + ty;
-
-        // Combined angular offset (optional debug)
-        double totalAngleOffsetDeg =
-                Math.hypot(tx, ty);
-
-        //                 AUTO-TURN LOGIC
-
-        if (Math.abs(tx) > TX_TOLERANCE_DEG) {
-
-            // Proportional control: more error → more turn
-            double turnPower = TURN_KP * tx;
-
-            // Clamp power for safety
-            turnPower = Math.max(-MAX_TURN_POWER,
-                    Math.min(MAX_TURN_POWER, turnPower));
-
-            setTurnPower(turnPower);
-        }
-
-        //               DISTANCE CALCULATION
-
-        double distanceInches = Double.NaN;
-
-        // Prevent invalid tan() math
-        if (trueVerticalAngleDeg > 1.0) {
-
-            double angleRad = Math.toRadians(trueVerticalAngleDeg);
-
-            distanceInches =
-                    (TARGET_HEIGHT_IN - LIMELIGHT_LENS_HEIGHT_IN)
-                            / Math.tan(angleRad);
-
-            // Force positive distance
-            distanceInches = Math.abs(distanceInches);
-        }
-
-        //                     TELEMETRY
-
-        telemetry.addData("tx (deg)", tx);
-        telemetry.addData("ty (deg)", ty);
-        telemetry.addData("True Vertical Angle (deg)", trueVerticalAngleDeg);
-        telemetry.addData("Total Angle Offset (deg)", totalAngleOffsetDeg);
-        telemetry.addData("TA", ta);
-        telemetry.addData("Distance (in)", distanceInches);
-        telemetry.addData("Distance (ft)", distanceInches / 12.0);
+        telemetry.addData("Mode", autograb ? "AUTO-GRAB" : "DRIVER");
         telemetry.update();
     }
+    
+    private void runAutoGrab() {
+        LLResult result = limelight.getLatestResult();
 
-    //                        HELPER
+        // No usable target -> creep straight forward and bail
+        if (result == null || !result.isValid() || result.getTa() < MIN_TA) {
+            telemetry.addLine("No valid target");
+            follower.setTeleOpDrive(APPROACH_POWER, 0, 0);
+            return;
+        }
 
-    private void setTurnPower(double power) {
-        frontLeft.setPower(power);
-        backLeft.setPower(power);
-        frontRight.setPower(-power);
-        backRight.setPower(-power);
+        double tx = result.getTx();   // horizontal error: + = ball is to the right
+
+        // Proportional turn, but zero inside the dead-band so we don't twitch
+        double turnPower = 0;
+        if (Math.abs(tx) > TX_TOLERANCE_DEG) {
+            turnPower = TURN_KP * tx;
+            turnPower = Math.max(-MAX_TURN_POWER, Math.min(MAX_TURN_POWER, turnPower));
+        }
+
+        // Forward + steering at the same time
+        follower.setTeleOpDrive(APPROACH_POWER, 0, turnPower);
+
+        telemetry.addData("tx", tx);
+        telemetry.addData("turnPower", turnPower);
     }
 }
