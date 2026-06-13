@@ -10,13 +10,10 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 @TeleOp(name = "Limelight Distance + Angle (Vision Only)", group = "Vision")
-public class dontchangethisfilebecauseitactuallyworks extends OpMode {
+public class Final_Limelight extends OpMode {
 
-    // ================= HARDWARE =================
     private Limelight3A limelight;
     private IMU imu;
-
-    // ================== TUNE THESE ==================
 
     // Measured Limelight mount angle (degrees)
     private static final double LIMELIGHT_MOUNT_ANGLE_DEG = 25.0;
@@ -30,15 +27,11 @@ public class dontchangethisfilebecauseitactuallyworks extends OpMode {
     // Reject very small blobs (noise)
     private static final double MIN_TA = 0.5;
 
-    // =================================================
-
     @Override
     public void init() {
 
-        // Limelight
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
-        // IMU (used only to keep Limelight pose math happy)
         imu = hardwareMap.get(IMU.class, "imu");
         IMU.Parameters params = new IMU.Parameters(
                 new RevHubOrientationOnRobot(
@@ -48,7 +41,6 @@ public class dontchangethisfilebecauseitactuallyworks extends OpMode {
         );
         imu.initialize(params);
 
-        // Force Limelight pipeline 1
         limelight.pipelineSwitch(1);
 
         telemetry.addLine("Limelight Vision Only Ready");
@@ -57,28 +49,23 @@ public class dontchangethisfilebecauseitactuallyworks extends OpMode {
 
     @Override
     public void start() {
-        // Start Limelight processing
         limelight.start();
     }
 
     @Override
     public void loop() {
 
-        // Update yaw so Limelight math stays correct
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         limelight.updateRobotOrientation(orientation.getYaw());
 
-        // Get latest vision result
         LLResult llResult = limelight.getLatestResult();
 
-        // ---------- VALIDITY CHECK ----------
         if (llResult == null || !llResult.isValid()) {
             telemetry.addLine("No valid target");
             telemetry.update();
             return;
         }
 
-        // ---------- AREA FILTER ----------
         double ta = llResult.getTa();
         if (ta < MIN_TA) {
             telemetry.addLine("Target rejected (TA too small)");
@@ -87,25 +74,16 @@ public class dontchangethisfilebecauseitactuallyworks extends OpMode {
             return;
         }
 
-        // ---------- ANGLES FROM CROSSHAIR ----------
-
-        // Horizontal angle (left/right)
         double tx = llResult.getTx();
 
-        // Vertical angle (up/down)
         double ty = llResult.getTy();
 
-        // True vertical angle including camera tilt
         double trueVerticalAngleDeg =
                 LIMELIGHT_MOUNT_ANGLE_DEG + ty;
 
-        // Combined angular offset from crosshair
         double totalAngleOffsetDeg =
                 Math.hypot(tx, ty);
 
-        // ---------- DISTANCE CALCULATION ----------
-
-        // Prevent invalid tan() values
         if (trueVerticalAngleDeg <= 1.0) {
             telemetry.addLine("Angle too small for distance math");
             telemetry.update();
@@ -118,10 +96,8 @@ public class dontchangethisfilebecauseitactuallyworks extends OpMode {
                 (TARGET_HEIGHT_IN - LIMELIGHT_LENS_HEIGHT_IN)
                         / Math.tan(angleRad);
 
-        // Force positive distance
         distanceInches = Math.abs(distanceInches);
 
-        // ---------- TELEMETRY ----------
         telemetry.addData("tx (deg)", tx);
         telemetry.addData("ty (deg)", ty);
         telemetry.addData("True Vertical Angle (deg)", trueVerticalAngleDeg);

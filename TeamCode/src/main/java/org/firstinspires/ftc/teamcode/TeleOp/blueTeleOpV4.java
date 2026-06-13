@@ -54,7 +54,7 @@ public class blueTeleOpV4 extends OpMode {
     private static final double LIMELIGHT_MOUNT_ANGLE_DEG = 25.0;
 
     // Height of Limelight lens from the floor (inches)
-    private static final double LIMELIGHT_LENS_HEIGHT_IN = 9.5;
+    private static final double LIMELIGHT_LENS_HEIGHT_IN = 10;
 
     // Height of the target from the floor (inches)
     private static final double TARGET_HEIGHT_IN = 2.5;
