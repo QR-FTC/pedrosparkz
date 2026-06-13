@@ -30,7 +30,7 @@ import java.util.function.Supplier;
 public class redTeleOpV4 extends OpMode {
     private int D;
 
-    private Pose startPose = new Pose(56, 30, Math.toRadians(90));
+    private Pose startPose = new Pose(48, 25, Math.toRadians(90));
     private ElapsedTime SleepTimer = new ElapsedTime();
     private DcMotorEx deposit;
     private DcMotor intake;
@@ -151,6 +151,12 @@ public class redTeleOpV4 extends OpMode {
             autoShooting = false;
 
         }
+        if (gamepad2.left_trigger>0.1) {
+            RPM = 2600;
+        }
+        if(gamepad2.right_trigger>0.1) {
+            RPM = 2940;
+        }
 
         if (gamepad1.a) {
             double angle = shooterCalculatons.getthetared(follower.getPose().getX(), follower.getPose().getY());
@@ -180,7 +186,7 @@ public class redTeleOpV4 extends OpMode {
             RPM = 0;
         }
         if (autoShooting){
-            RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),true) -20;
+            RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),true) -50;
         }
 
         double ticks = shooterCalculatons.rotationsToTicks(RPM);

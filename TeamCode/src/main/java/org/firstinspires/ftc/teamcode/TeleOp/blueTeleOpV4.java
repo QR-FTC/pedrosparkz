@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.control.PIDFController;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.BezierPoint;
@@ -18,6 +19,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
@@ -29,7 +31,8 @@ import java.util.function.Supplier;
 @TeleOp(name="blueTeleopV4")
 public class blueTeleOpV4 extends OpMode {
     private int D;
-    private final Pose startPose = new Pose(56, 30, Math.toRadians(90));
+    private Servo Gateservo;
+    private final Pose startPose = new Pose(48, 25, Math.toRadians(90));
     private ElapsedTime SleepTimer = new ElapsedTime();
     private DcMotorEx deposit;
     private DcMotor intake;
@@ -52,6 +55,7 @@ public class blueTeleOpV4 extends OpMode {
     private DcMotor backLeft;
     private DcMotor backRight;
     private static final double LIMELIGHT_MOUNT_ANGLE_DEG = 25.0;
+    private PIDFController PIDF;
 
     // Height of Limelight lens from the floor (inches)
     private static final double LIMELIGHT_LENS_HEIGHT_IN = 10;
@@ -81,8 +85,9 @@ public class blueTeleOpV4 extends OpMode {
 
 
         shooterCalculatons = new ShooterCalculatons();
+        PIDF = new PIDFController(new com.pedropathing.control.PIDFCoefficients(0.1,0 , 0.000000001, 0));
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(56, 30, Math.toRadians(90)));
+        follower.setStartingPose(startPose);
         follower.update();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
@@ -93,11 +98,13 @@ public class blueTeleOpV4 extends OpMode {
 
         deposit.setDirection(DcMotorSimple.Direction.REVERSE);
         // Tuned vals for P and F
-        final double P = 65;
-        final double F = 16.8;
+        final double P = 61.3;
+        final double F = 15;
         PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
         deposit.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        Gateservo = hardwareMap.get(Servo.class, "servo");
+
 
         // Force pipeline 1
         limelight.pipelineSwitch(1);
@@ -134,12 +141,19 @@ public class blueTeleOpV4 extends OpMode {
         if (gamepad1.yWasPressed()) {
             follower.setStartingPose(new Pose(134, 8, Math.toRadians(90)));
         }
+        if (gamepad1.dpad_up) {
+            Gateservo.setPosition(0.35);
+        }
+        else if (gamepad1.dpad_down) {
+            Gateservo.setPosition(0.12);
+        }
+
 
         // When gamepad-1 right bumper is pressed run intake 1 and 2 motors
         if (gamepad1.left_bumper) {
-            intake.setPower(0.8);
+            intake.setPower(-1);
         } else if (gamepad1.right_bumper) { // When Gamepad-1 left bumper is pressed reverse the intake motor
-            intake.setPower(-0.8);
+            intake.setPower(1);
         } else { // if not stop the motor
             intake.setPower(0.0);
         }
@@ -152,8 +166,16 @@ public class blueTeleOpV4 extends OpMode {
         }
 
         if (gamepad1.a) {
-            double angle = shooterCalculatons.getthetablue(follower.getPose().getX(), follower.getPose().getY());
+            double angle = shooterCalculatons.getthetablue(follower.getPose().getX(), follower.getPose().getY())+95F;
             error = angle - Math.toDegrees(follower.getPose().getHeading());
+            if (error > 180) {
+                error = error - 360;
+            }
+            if (error < -180) {
+                error = error + 360;
+            }
+            PIDF.setTargetPosition(error);
+            PIDF.run();
             if (Math.abs(error) < 2) {
 
             }
@@ -165,6 +187,7 @@ public class blueTeleOpV4 extends OpMode {
             }
             automatedDrive = true;
         }
+
 
         //Stop automated following if the follower is done
         if (automatedDrive && (!gamepad1.a)) {
@@ -179,13 +202,19 @@ public class blueTeleOpV4 extends OpMode {
             RPM = 0;
         }
         if (autoShooting){
-            RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false)-20;
+            RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false)+100;
+        }
+        if (gamepad2.aWasPressed()) {
+            RPM=RPM+50;
+        }
+        if(gamepad2.bWasPressed()) {
+            RPM = RPM-50;
         }
 
         double ticks = shooterCalculatons.rotationsToTicks(RPM);
         deposit.setVelocity(ticks);
-        final double P = 65;
-        final double F = 16.8;
+        final double P = 61.3;
+        final double F = 15;
         PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
         deposit.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
@@ -196,30 +225,29 @@ public class blueTeleOpV4 extends OpMode {
         //telemetry.addData("Gate Servo Position", servoIntake.getPosition());
         //telemetry.addData("Intake Power Left", intake_2.getPower());
         //telemetry.addData("Intake Power Right", intake_3.getPower());
-        telemetry.addData("Deposit Power", deposit.getPower());
+telemetry.addData("Deposit Power", deposit.getPower());
         telemetry.addData("Current X pos", follower.getPose().getX());
         telemetry.addData("Current Y Pos", follower.getPose().getY());
         telemetry.addData("Current Heading", follower.getPose().getHeading());
         telemetry.addData("targetRPM",RPM);
         telemetry.addData("actualRPM",shooterCalculatons.ticksToRotations(deposit.getVelocity()));
-        telemetry.addData("Distance",getDistance());
-        telemetry.addData("Current RPM", getRPM(getDistance(), 35));
-        telemetry.addData("blue angle", shooterCalculatons.getthetablue(follower.getPose().getX(), follower.getPose().getY()));
-        telemetry.addData("red angle", shooterCalculatons.getthetared(follower.getPose().getX(), follower.getPose().getY()));
+        telemetry.addData("Distance",shooterCalculatons.distanceFromBlue(follower.getPose().getX(), follower.getPose().getY()));
+       telemetry.addData("blue angle", shooterCalculatons.getthetablue(follower.getPose().getX(), follower.getPose().getY()));
+       telemetry.addData("red angle", shooterCalculatons.getthetared(follower.getPose().getX(), follower.getPose().getY()));
         telemetry.addData("error", error);
 
-        if (gamepad1.dpad_up){
-            autograb = true;
-        } else {
-            autograb = false;
-        }
-
-        if (gamepad1.dpad_right){
-            limelight.pipelineSwitch(1);
-        }
-        else if (gamepad1.dpad_left){
-            limelight.pipelineSwitch(0);
-        }
+//        if (gamepad1.dpad_up){
+//            autograb = true;
+//        } else {
+//            autograb = false;
+//        }
+//
+//        if (gamepad1.dpad_right){
+//            limelight.pipelineSwitch(1);
+//        }
+//        else if (gamepad1.dpad_left){
+//            limelight.pipelineSwitch(0);
+//        }
 
         follower.update();
         if (autograb){
@@ -340,7 +368,7 @@ public double getDistance()
         double numerator = (gravityMM*distance*distance);
         double denominator = (2* Math.pow(Math.cos(thetaRadian), 2)*(distance*Math.tan(thetaRadian)-targetHeight));
 
-        telemetry.addData("target Height", targetHeight);
+//        telemetry.addData("target Height", targetHeight);
         telemetry.addData("Numerator", numerator);
         telemetry.addData("Denominator", denominator);
 
@@ -348,7 +376,7 @@ public double getDistance()
 
         double velocity = Math.sqrt( numerator / denominator);
 
-        telemetry.addData("velocity", velocity);
+//        telemetry.addData("velocity", velocity);
 
         double flywheelRadius = 4.8;
         return (60*velocity) / (2*Math.PI*flywheelRadius);

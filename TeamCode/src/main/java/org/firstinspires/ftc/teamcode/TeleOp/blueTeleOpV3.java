@@ -134,7 +134,7 @@
                 RPM = 0;
             }
             if (autoShooting){
-                RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false);
+                RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false)+100;
             }
 
             double ticks = shooterCalculatons.rotationsToTicks(RPM);
@@ -151,17 +151,17 @@
             //telemetry.addData("Gate Servo Position", servoIntake.getPosition());
             //telemetry.addData("Intake Power Left", intake_2.getPower());
             //telemetry.addData("Intake Power Right", intake_3.getPower());
-            telemetry.addData("Deposit Power", deposit.getPower());
-            telemetry.addData("Current X pos", follower.getPose().getX());
-            telemetry.addData("Current Y Pos", follower.getPose().getY());
-            telemetry.addData("Current Heading", follower.getPose().getHeading());
-            telemetry.addData("targetRPM",RPM);
-            telemetry.addData("actualRPM",shooterCalculatons.ticksToRotations(deposit.getVelocity()));
-            telemetry.addData("Distance",getDistance());
-            telemetry.addData("Current RPM", getRPM(getDistance(), 35));
-            telemetry.addData("blue angle", shooterCalculatons.getthetablue(follower.getPose().getX(), follower.getPose().getY()));
-            telemetry.addData("red angle", shooterCalculatons.getthetared(follower.getPose().getX(), follower.getPose().getY()));
-            telemetry.addData("error", error);
+//            telemetry.addData("Deposit Power", deposit.getPower());
+//            telemetry.addData("Current X pos", follower.getPose().getX());
+//            telemetry.addData("Current Y Pos", follower.getPose().getY());
+//            telemetry.addData("Current Heading", follower.getPose().getHeading());
+//            telemetry.addData("targetRPM",RPM);
+//            telemetry.addData("actualRPM",shooterCalculatons.ticksToRotations(deposit.getVelocity()));
+//            telemetry.addData("Distance",getDistance());
+//            telemetry.addData("Current RPM", getRPM(getDistance(), 35));
+//            telemetry.addData("blue angle", shooterCalculatons.getthetablue(follower.getPose().getX(), follower.getPose().getY()));
+//            telemetry.addData("red angle", shooterCalculatons.getthetared(follower.getPose().getX(), follower.getPose().getY()));
+//            telemetry.addData("error", error);
 
             telemetry.update();
 
@@ -196,7 +196,7 @@
             double numerator = (gravityMM*distance*distance);
             double denominator = (2* Math.pow(Math.cos(thetaRadian), 2)*(distance*Math.tan(thetaRadian)-targetHeight));
 
-            telemetry.addData("target Height", targetHeight);
+//            telemetry.addData("target Height", targetHeight);
             telemetry.addData("Numerator", numerator);
             telemetry.addData("Denominator", denominator);
 
