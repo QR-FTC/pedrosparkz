@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import android.view.View;
+
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.control.PIDFController;
@@ -31,8 +33,14 @@ import java.util.function.Supplier;
 @TeleOp(name="blueTeleopV4")
 public class blueTeleOpV4 extends OpMode {
     private int D;
+    private boolean Yiscorrect=false;
+    private boolean readytoshoot = false;
+    private double offset=0;
+    private boolean Open = false;
+    private boolean erroralignment = false;
+    private boolean Xiscorrect = false;
     private Servo Gateservo;
-    private final Pose startPose = new Pose(48, 25, Math.toRadians(90));
+    private final Pose startPose = new Pose(48, 25, Math.toRadians(120));
     private ElapsedTime SleepTimer = new ElapsedTime();
     private DcMotorEx deposit;
     private DcMotor intake;
@@ -58,7 +66,7 @@ public class blueTeleOpV4 extends OpMode {
     private PIDFController PIDF;
 
     // Height of Limelight lens from the floor (inches)
-    private static final double LIMELIGHT_LENS_HEIGHT_IN = 9.5;
+    private static final double LIMELIGHT_LENS_HEIGHT_IN = 10F;
 
     // Height of the target from the floor (inches)
     private static final double TARGET_HEIGHT_IN = 2.5;
@@ -85,7 +93,7 @@ public class blueTeleOpV4 extends OpMode {
 
 
         shooterCalculatons = new ShooterCalculatons();
-        PIDF = new PIDFController(new com.pedropathing.control.PIDFCoefficients(0.1,0 , 0.000000001, 0));
+        PIDF = new PIDFController(new com.pedropathing.control.PIDFCoefficients(1.2,0 , 0, 0));
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startPose);
         follower.update();
@@ -165,28 +173,28 @@ public class blueTeleOpV4 extends OpMode {
 
         }
 
-        if (gamepad1.a) {
-            double angle = shooterCalculatons.getthetablue(follower.getPose().getX(), follower.getPose().getY())+95F;
+       if (gamepad1.a) {
+            double angle = shooterCalculatons.getthetablue(follower.getPose().getX()-(5.5*Math.cos(follower.getPose().getHeading())), follower.getPose().getY()-(5.5*Math.sin(follower.getPose().getHeading())))+90+offset;
             error = angle - Math.toDegrees(follower.getPose().getHeading());
             if (error > 180) {
                 error = error - 360;
             }
             if (error < -180) {
                 error = error + 360;
-            }
+           }
             PIDF.setTargetPosition(error);
-            PIDF.run();
+           PIDF.run();
             if (Math.abs(error) < 2) {
 
             }
             else if (error < 0 ) {
                 follower.setTeleOpDrive(0,0,-0.3);
             }
-            else if(error > 0 ) {
+           else if(error > 0 ) {
                 follower.setTeleOpDrive(0,0,0.3);
             }
-            automatedDrive = true;
-        }
+           automatedDrive = true;
+       }
 
 
         //Stop automated following if the follower is done
@@ -196,19 +204,36 @@ public class blueTeleOpV4 extends OpMode {
         }
         // When gamepad-2 right trigger is pressed start deposit motor.
         if (gamepad1.right_trigger > 0.1) {
-            autoShooting  = true;
+            RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false)+100;
         } else if(gamepad1.left_trigger > 0.1) { // else stop the motor
             autoShooting = false;
             RPM = 0;
         }
-        if (autoShooting){
-            RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false)+100;
-        }
+        if (autoShooting){}
         if (gamepad2.aWasPressed()) {
-            RPM=RPM+50;
+            RPM = 3500;
+
         }
         if(gamepad2.bWasPressed()) {
-            RPM = RPM-50;
+            RPM = 3100;
+        }
+        if (gamepad2.xWasPressed()) {
+            RPM = RPM -50;
+        }
+        if(gamepad2.yWasPressed()) {
+            RPM = RPM + 50;
+        }
+        if(gamepad2.dpad_up) {
+            Gateservo.setPosition(0.12);
+        }
+        if(gamepad2.dpad_down) {
+            Gateservo.setPosition(0.35);
+        }
+        if(gamepad2.dpadLeftWasPressed()) {
+            offset = offset+3;
+        }
+        if(gamepad2.dpadRightWasPressed()) {
+            offset = offset-3;
         }
 
         double ticks = shooterCalculatons.rotationsToTicks(RPM);
@@ -217,6 +242,45 @@ public class blueTeleOpV4 extends OpMode {
         final double F = 15;
         PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
         deposit.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
+
+        if (error!=0 && Math.abs(error)<=2) {
+            erroralignment = true;
+        } else {
+            erroralignment= false;
+        }
+        if (follower.getPose().getY() >= 68 || follower.getPose().getY() <= 35) {
+            Yiscorrect = true;
+        } else {
+            Yiscorrect= false;
+        }
+
+
+        if (Yiscorrect && erroralignment && gamepad1.right_trigger>0.1) {
+            Gateservo.setPosition(0.12);
+        } else if(Yiscorrect&&erroralignment){
+            Gateservo.setPosition(0.35);
+        }
+
+        if(Gateservo.getPosition() == 0.12) {
+            Open = true;
+        } else {
+            Open = false;
+        }
+        if (Gateservo.getPosition() == 0.12 && Yiscorrect && erroralignment) {
+            readytoshoot = true;
+
+        } else {
+            readytoshoot = false;
+        }
+//        } else {
+//            Gateservo.setPosition(0.35);
+//            intake.setPower(0);
+//        }
+
+
+
+
+
 
 
 
@@ -235,6 +299,11 @@ telemetry.addData("Deposit Power", deposit.getPower());
        telemetry.addData("blue angle", shooterCalculatons.getthetablue(follower.getPose().getX(), follower.getPose().getY()));
        telemetry.addData("red angle", shooterCalculatons.getthetared(follower.getPose().getX(), follower.getPose().getY()));
         telemetry.addData("error", error);
+        telemetry.addData("erroralignment true?", erroralignment);
+        telemetry.addData("Servo Pos", Gateservo.getPosition());
+        telemetry.addData("is gate servo open?",Open );
+        telemetry.addData("Ready to shoot?", readytoshoot);
+        telemetry.addData("is Y correct?", Yiscorrect);
 
 //        if (gamepad1.dpad_up){
 //            autograb = true;

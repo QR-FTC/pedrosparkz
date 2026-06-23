@@ -21,7 +21,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 @Autonomous(name = "farblueV2", group = "Examples")
 public class farBlueV2 extends OpMode {
     boolean gateservoended2 = false;
+    private Servo Gateservo;
     boolean case1Started = false;
+    boolean case0Started = false;
     boolean case3Started = false;
     boolean case2Started = false;
     boolean case4Started = false;
@@ -33,17 +35,20 @@ public class farBlueV2 extends OpMode {
     private Follower follower;
     private DcMotorEx shootingmotor;
     public double RPM = 0;
-    private Timer pathTimer, actionTimer, opmodeTimer, catTimer, dogTimer, arrowTimer, bowTimer, intaketimer;
+    private Timer pathTimer, actionTimer, opmodeTimer, catTimer, dogTimer, arrowTimer, bowTimer, intaketimer, startingtimer;
     private int pathState;
 
 
-    private final Pose endingposition = new Pose(48, 25, Math.toRadians(90));
+    private final Pose endingposition = new Pose(48, 25,Math.toRadians(90));
     private final Pose startPose = new Pose(56, 8, Math.toRadians(90)); // the robot will be set where the left wheels are along the lines of the beginning of the third tile of x.
 
 
-    private final Pose scorePose = new Pose(56, 16, Math.toRadians(215));
-    private final Pose scorePose1 = new Pose(56,16, Math.toRadians(210));
-    private final Pose scorePose2 = new Pose(56,16, Math.toRadians(215));// left front wheel will be on this point; and its on the 2nd tile in x and fourth tile in y along y=-x.
+    private final Pose scorePose = new Pose(56, 16,Math.toRadians(235));
+    private final Pose scorePose1 = new Pose(56, 16,Math.toRadians(205));
+    private final Pose scorePose2 = new Pose(56, 16,Math.toRadians(200));
+
+
+    //heel will be on this point; and its on the 2nd tile in x and fourth tile in y along y=-x.
     //    private final Pose scorePose = new Pose(86, 105, Math.toRadians(45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     private final Pose arrivingtomiddleballs = new Pose (56,60, Math.toRadians(180));
     private final Pose collectingmiddleballs = new Pose(24, 60, Math.toRadians(180)); // Highest (First Set) of Artifacts from the Spike Mark.
@@ -69,8 +74,8 @@ public class farBlueV2 extends OpMode {
                 .setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading())
                 .build();
         gomiddleset = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, arrivingtomiddleballs))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), arrivingtomiddleballs.getHeading())
+                .addPath(new BezierLine(scorePose1, arrivingtomiddleballs))
+                .setLinearHeadingInterpolation(scorePose1.getHeading(), arrivingtomiddleballs.getHeading())
                 .build();
 
         collectmiddleset = follower.pathBuilder()
@@ -85,8 +90,8 @@ public class farBlueV2 extends OpMode {
 
         /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         shootmiddleset = follower.pathBuilder()
-                .addPath(new BezierLine(opengate, scorePose1))
-                .setLinearHeadingInterpolation(opengate.getHeading(), scorePose1.getHeading())
+                .addPath(new BezierLine(opengate, scorePose2))
+                .setLinearHeadingInterpolation(opengate.getHeading(), scorePose2.getHeading())
                 .build();
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         arriveset1 = follower.pathBuilder()
@@ -100,8 +105,8 @@ public class farBlueV2 extends OpMode {
                 .build();
 //                /* This is our grabPickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         shootset1= follower.pathBuilder()
-                .addPath(new BezierLine(collectingset1, scorePose2))
-                .setLinearHeadingInterpolation(collectingset1.getHeading(), scorePose2.getHeading())
+                .addPath(new BezierLine(collectingset1, scorePose))
+                .setLinearHeadingInterpolation(collectingset1.getHeading(), scorePose.getHeading())
                 .build();
         /* This is our scorePickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         arriveset3 = follower.pathBuilder()
@@ -113,8 +118,8 @@ public class farBlueV2 extends OpMode {
                 .setLinearHeadingInterpolation(arrivingset3.getHeading(), collectingset3.getHeading())
                 .build();
         scoringset3 = follower.pathBuilder()
-                .addPath(new BezierLine(collectingset3, scorePose))
-                .setLinearHeadingInterpolation(collectingset3.getHeading(), scorePose.getHeading())
+                .addPath(new BezierLine(collectingset3, scorePose1))
+                .setLinearHeadingInterpolation(collectingset3.getHeading(), scorePose1.getHeading())
                 .build();
         endingpos = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, endingposition))
@@ -127,8 +132,12 @@ public class farBlueV2 extends OpMode {
 
         switch (pathState) {
             case 0: {
+                if (!case0Started) {
+                    case0Started = true;
+                    startingtimer.resetTimer();
+                }
                 follower.followPath(scorePreload);
-                RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false)+130;
+                RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false)+200;
                 setPathState(1);
             }
 //            case 0: {
@@ -148,11 +157,12 @@ public class farBlueV2 extends OpMode {
 // "case1Started" is used so that the timers will only start counting once the rest continues and wont reset when it runs over the code again.
                     }
                     if (1.75 <= dogTimer.getElapsedTimeSeconds() && catTimer.getElapsedTimeSeconds() < 4.00) {
-                        intake.setPower(-0.8);
+                        intake.setPower(-1);
                     }
                     if (4.00 <= dogTimer.getElapsedTimeSeconds()) {
                         intake.setPower(0.0);
                         RPM = -1000;
+                        Gateservo.setPosition(0.35);
                         setPathState(2);
                     }
                 }
@@ -173,7 +183,7 @@ public class farBlueV2 extends OpMode {
                     follower.followPath(arriveset3, true);
                     setPathState(3);
                     RPM = -1500;
-                    intake.setPower(-1);
+                    intake.setPower(-0.5);
                     pathTimer.resetTimer();
 
                     /* Score Preload */
@@ -216,6 +226,7 @@ public class farBlueV2 extends OpMode {
             {
                 if(!follower.isBusy()&& pathTimer.getElapsedTimeSeconds()>2.00) {
                     follower.followPath(scoringset3, true);
+                    Gateservo.setPosition(0.12);
                     setPathState(15);
                 }
 
@@ -235,13 +246,14 @@ public class farBlueV2 extends OpMode {
                     }
                     if (1.0 <= catTimer.getElapsedTimeSeconds() && catTimer.getElapsedTimeSeconds() < 4.25){
                         intake.setPower(0.0);
-                        RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false) +130;
+                        RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false) +30;
                     }
                     if (4.25 <= catTimer.getElapsedTimeSeconds()&& catTimer.getElapsedTimeSeconds()<6.25) {
                         intake.setPower(-0.8);
                     }
                     if(catTimer.getElapsedTimeSeconds()>=6.25) {
                         RPM = -600;
+                        Gateservo.setPosition(0.35);
                         intake.setPower(0.0);
                         setPathState(6);
 
@@ -275,6 +287,7 @@ public class farBlueV2 extends OpMode {
             {
                 if(!follower.isBusy() && pathTimer.getElapsedTimeSeconds()>2.00) {
                     follower.followPath(shootmiddleset, true);
+                    Gateservo.setPosition(0.12);
                     setPathState(20);
                 }
             }
@@ -292,10 +305,10 @@ public class farBlueV2 extends OpMode {
                     }
                     if (1.0 <= arrowTimer.getElapsedTimeSeconds() && arrowTimer.getElapsedTimeSeconds() < 4.25){
                         intake.setPower(0.0);
-                        RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false) +130;
+                        RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false) +30;
                     }
                     if (4.75 <= arrowTimer.getElapsedTimeSeconds()&& arrowTimer.getElapsedTimeSeconds()<7) {
-                        intake.setPower(-0.8);
+                        intake.setPower(-0.5);
                     }
                     if(arrowTimer.getElapsedTimeSeconds()>=7) {
                         RPM = -600;
@@ -311,6 +324,7 @@ public class farBlueV2 extends OpMode {
                 if(!follower.isBusy()) {
                     follower.followPath(endingpos, true);
                    intake.setPower(0.0);
+                   intake.setPower(1);
                    RPM = 0;
                     setPathState(-500);
                 }
@@ -500,14 +514,17 @@ public class farBlueV2 extends OpMode {
         arrowTimer =new Timer();
         bowTimer = new Timer();
         intaketimer = new Timer();
+        startingtimer = new Timer();
 
         dogTimer = new Timer();
         opmodeTimer.resetTimer();
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
         follower.setStartingPose(startPose);
-        follower.setMaxPower(0.8);
+        follower.setMaxPower(0.9);
         shootingmotor = hardwareMap.get(DcMotorEx.class, "deposit");;
+        Gateservo = hardwareMap.get(Servo.class, "servo");;
+
         intake = hardwareMap.get(DcMotorEx.class, "intake");
         final double P = 65;
         final double F = 16.8;
