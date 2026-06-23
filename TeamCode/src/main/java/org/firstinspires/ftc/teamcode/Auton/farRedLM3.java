@@ -42,9 +42,9 @@ public class farRedLM3 extends OpMode {
     private Pose endingposition = new Pose(48, 25, Math.toRadians(90));// the robot will be set where the left wheels are along the lines of the beginning of the third tile of x.
 
 
-    private  Pose scorePose = new Pose(62, 20, Math.toRadians(115));
-    private Pose scorePose2 = new Pose(62,20, Math.toRadians(115));
-    private Pose scorePose1 = new Pose(62, 20, Math.toRadians(115));// left front wheel will be on this point; and its on the 2nd tile in x and fourth tile in y along y=-x.
+    private  Pose scorePose = new Pose(82, 20, Math.toRadians(180));
+    private Pose scorePose2 = new Pose(82,20, Math.toRadians(160));
+    private Pose scorePose1 = new Pose(82, 20, Math.toRadians(115));// left front wheel will be on this point; and its on the 2nd tile in x and fourth tile in y along y=-x.
     //    private final Pose scorePose = new Pose(86, 105, Math.toRadians(45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     private  Pose arrivingtomiddleballs = new Pose (56,60, Math.toRadians(180));
     private  Pose collectingmiddleballs = new Pose(28, 62, Math.toRadians(180)); // Highest (First Set) of Artifacts from the Spike Mark.
@@ -86,8 +86,8 @@ public class farRedLM3 extends OpMode {
 
         /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         shootmiddleset = follower.pathBuilder()
-                .addPath(new BezierLine(opengate, scorePose2))
-                .setLinearHeadingInterpolation(opengate.getHeading(), scorePose2.getHeading())
+                .addPath(new BezierLine(opengate, scorePose))
+                .setLinearHeadingInterpolation(opengate.getHeading(), scorePose.getHeading())
                 .build();
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         arriveset1 = follower.pathBuilder()
@@ -114,12 +114,12 @@ public class farRedLM3 extends OpMode {
                 .setLinearHeadingInterpolation(arrivingset3.getHeading(), collectingset3.getHeading())
                 .build();
         scoringset3 = follower.pathBuilder()
-                .addPath(new BezierLine(collectingset3, scorePose1))
-                .setLinearHeadingInterpolation(collectingset3.getHeading(), scorePose1.getHeading())
+                .addPath(new BezierLine(collectingset3, scorePose))
+                .setLinearHeadingInterpolation(collectingset3.getHeading(), scorePose.getHeading())
                 .build();
         endingpos = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose2, endingposition))
-                .setLinearHeadingInterpolation(scorePose2.getHeading(), endingposition.getHeading())
+                .setLinearHeadingInterpolation(scorePose.getHeading(), endingposition.getHeading())
                 .build();
 
     }
@@ -151,7 +151,7 @@ public class farRedLM3 extends OpMode {
 // "case1Started" is used so that the timers will only start counting once the rest continues and wont reset when it runs over the code again.
                     }
                     if (1.75 <= dogTimer.getElapsedTimeSeconds() && catTimer.getElapsedTimeSeconds() < 4.00) {
-                        intake.setPower(0.8);
+                        intake.setPower(-0.8);
                     }
                     if (4.00 <= dogTimer.getElapsedTimeSeconds()) {
                         intake.setPower(0.0);
@@ -176,7 +176,7 @@ public class farRedLM3 extends OpMode {
                     follower.followPath(arriveset3, true);
                     setPathState(3);
                     RPM = -1300;
-                  intake.setPower(0.5);
+                  intake.setPower(-0.5);
                     pathTimer.resetTimer();
 
                     /* Score Preload */
@@ -233,7 +233,7 @@ public class farRedLM3 extends OpMode {
                         case1Started = true;
                     }
                     if (0.00 <= catTimer.getElapsedTimeSeconds() && catTimer.getElapsedTimeSeconds() < 0.3) {
-                       intake.setPower(-0.3);
+                       intake.setPower(0.3);
                         RPM= -1500;
                     }
                     if (1.0 <= catTimer.getElapsedTimeSeconds() && catTimer.getElapsedTimeSeconds() < 4.25){
@@ -241,7 +241,7 @@ public class farRedLM3 extends OpMode {
                         RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),true) +20;
                     }
                     if (4.25 <= catTimer.getElapsedTimeSeconds()&& catTimer.getElapsedTimeSeconds()<6.25) {
-                        intake.setPower(0.8);
+                        intake.setPower(-0.8);
                     }
                     if(catTimer.getElapsedTimeSeconds()>=6.25) {
                         RPM = -600;
@@ -261,7 +261,7 @@ public class farRedLM3 extends OpMode {
                 if(!follower.isBusy() ) {
                     follower.followPath(gomiddleset, true);
                     setPathState(7);
-                   intake.setPower(0.8);
+                   intake.setPower(-0.8);
                 }
                 break;
             }
@@ -290,7 +290,7 @@ public class farRedLM3 extends OpMode {
                         arrowTimer.resetTimer();
                     }
                     if (0.00 <= arrowTimer.getElapsedTimeSeconds() && arrowTimer.getElapsedTimeSeconds() < 0.3) {
-                        intake.setPower(-0.3);
+                        intake.setPower(0.3);
                         RPM= -1500;
                     }
                     if (1.0 <= arrowTimer.getElapsedTimeSeconds() && arrowTimer.getElapsedTimeSeconds() < 4.25){
@@ -298,7 +298,7 @@ public class farRedLM3 extends OpMode {
                         RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),true) +20;
                     }
                     if (4.75 <= arrowTimer.getElapsedTimeSeconds()&& arrowTimer.getElapsedTimeSeconds()<7) {
-                        intake.setPower(0.8);
+                        intake.setPower(-0.8);
                     }
                     if(arrowTimer.getElapsedTimeSeconds()>=7) {
                         RPM = -600;
@@ -314,6 +314,7 @@ public class farRedLM3 extends OpMode {
                 if(!follower.isBusy()) {
                     follower.followPath(endingpos, true);
                     setPathState(-500);
+                    intake.setPower(1);
                     RPM = 0;
                 }
             }
@@ -503,10 +504,7 @@ public class farRedLM3 extends OpMode {
         arrowTimer =new Timer();
         bowTimer = new Timer();
         intaketimer = new Timer();
-        scorePose1 = scorePose1.mirror();
-        scorePose2 = scorePose2.mirror();
         startPose=startPose.mirror();
-        scorePose=scorePose.mirror();
         collectingmiddleballs =  collectingmiddleballs.mirror();
         arrivingtomiddleballs=arrivingtomiddleballs.mirror();
         arrivingtoset1=arrivingtoset1.mirror();
