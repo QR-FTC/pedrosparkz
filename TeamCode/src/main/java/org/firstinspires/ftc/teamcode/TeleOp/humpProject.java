@@ -25,6 +25,9 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import com.qualcomm.robotcore.hardware.IMU;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import java.util.function.Supplier;
 
@@ -35,6 +38,8 @@ public class humpProject extends OpMode {
     private TelemetryManager telemetryM;
 
     private static Follower follower;
+    IMU imu;
+    
 
     @Override
     public void init() {
