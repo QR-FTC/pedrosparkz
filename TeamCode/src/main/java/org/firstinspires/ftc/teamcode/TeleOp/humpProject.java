@@ -12,9 +12,9 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo; // Changed from CRServo
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -31,11 +31,11 @@ public class humpProject extends OpMode {
     // --- SWERVE HARDWARE DEFINITIONS ---
     // Drive Motors
     private DcMotorEx lfDrive, rfDrive, lrDrive, rrDrive;
-    // Steering Servos (or CRServos / Motors with absolute encoders)
-    private CRServo lfTurn, rfTurn, lrTurn, rrTurn;
 
-    // Robot Geometry Constants (Distance from center to wheels)
-    // Adjust these based on your frame dimensions (L = length, W = width)
+    // --- CHANGED TO REGULAR SERVOS ---
+    private Servo lfTurn, rfTurn, lrTurn, rrTurn;
+
+    // Robot Geometry Constants
     private final double L = 12.0;
     private final double W = 12.0;
     private final double R = Math.hypot(L, W);
@@ -66,16 +66,17 @@ public class humpProject extends OpMode {
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
         imu.initialize(parameters);
 
-        // --- MAP SWERVE MOTORS & SERVOS ---
+        // --- MAP SWERVE MOTORS ---
         lfDrive = hardwareMap.get(DcMotorEx.class, "lfDrive");
         rfDrive = hardwareMap.get(DcMotorEx.class, "rfDrive");
         lrDrive = hardwareMap.get(DcMotorEx.class, "lrDrive");
         rrDrive = hardwareMap.get(DcMotorEx.class, "rrDrive");
 
-        lfTurn = hardwareMap.get(CRServo.class, "lfTurn");
-        rfTurn = hardwareMap.get(CRServo.class, "rfTurn");
-        lrTurn = hardwareMap.get(CRServo.class, "lrTurn");
-        rrTurn = hardwareMap.get(CRServo.class, "rrTurn");
+        // --- MAP STANDARD SERVOS ---
+        lfTurn = hardwareMap.get(Servo.class, "lfTurn");
+        rfTurn = hardwareMap.get(Servo.class, "rfTurn");
+        lrTurn = hardwareMap.get(Servo.class, "lrTurn");
+        rrTurn = hardwareMap.get(Servo.class, "rrTurn");
 
         // --- MAP THE DEAD-WHEEL ---
         deadWheel = hardwareMap.get(DcMotorEx.class, "par");
@@ -84,39 +85,36 @@ public class humpProject extends OpMode {
     }
 
     @Override
-    public void start() {
-        // We do NOT call follower.startTeleopDrive() because it relies on Mecanum mixing logic.
-    }
+    public void start() {}
 
     @Override
     public void loop() {
-        // Update Pedro's background states if pathing is active elsewhere
         follower.update();
 
-        // 1. Capture joystick movements (Inverting Y so pushed forward = positive)
+        // 1. Capture joystick movements
         double stripeFwd = -gamepad1.left_stick_y;
         double stripeStrafe = gamepad1.left_stick_x;
         double rotationKey = gamepad1.right_stick_x;
 
-        // 2. Swerve Kinematics Equations (Translates input into vector components)
+        // 2. Swerve Kinematics Equations
         double A = stripeStrafe - rotationKey * (L / R);
         double B = stripeStrafe + rotationKey * (L / R);
         double C = stripeFwd - rotationKey * (W / R);
         double D = stripeFwd + rotationKey * (W / R);
 
-        // Calculate Speeds for each wheel module
+        // Calculate Speeds
         double lfSpeed = Math.hypot(B, C);
         double rfSpeed = Math.hypot(B, D);
         double lrSpeed = Math.hypot(A, C);
         double rrSpeed = Math.hypot(A, D);
 
-        // Calculate Target Steering Angles (in Radians)
+        // Calculate Target Steering Angles (Outputs range from -Math.PI to Math.PI)
         double lfAngle = Math.atan2(B, C);
         double rfAngle = Math.atan2(B, D);
         double lrAngle = Math.atan2(A, C);
         double rrAngle = Math.atan2(A, D);
 
-        // Normalize speeds if any motor calculation exceeds maximum value 1.0
+        // Normalize speeds if any motor calculation exceeds 1.0
         double maxSpeed = Math.max(Math.max(lfSpeed, rfSpeed), Math.max(lrSpeed, rrSpeed));
         if (maxSpeed > 1.0) {
             lfSpeed /= maxSpeed; rfSpeed /= maxSpeed; lrSpeed /= maxSpeed; rrSpeed /= maxSpeed;
@@ -128,13 +126,12 @@ public class humpProject extends OpMode {
         lrDrive.setPower(lrSpeed);
         rrDrive.setPower(rrSpeed);
 
-        // Note: For standard swerve setups, you will need to map an absolute encoder
-        // to each pod and run a PID loop to turn these angles into active steering powers.
-        // For simple visualization, mapping directly to CRServos:
-        lfTurn.setPower(lfAngle / Math.PI);
-        rfTurn.setPower(rfAngle / Math.PI);
-        lrTurn.setPower(lrAngle / Math.PI);
-        rrTurn.setPower(rrAngle / Math.PI);
+        // --- CHANGED: CONVERT RADIANS TO SERVO POSITION (0.0 to 1.0) ---
+        // Formula maps [-PI, PI] cleanly down to a [0.0, 1.0] fractional positional spectrum
+        lfTurn.setPosition((lfAngle + Math.PI) / (2.0 * Math.PI));
+        rfTurn.setPosition((rfAngle + Math.PI) / (2.0 * Math.PI));
+        lrTurn.setPosition((lrAngle + Math.PI) / (2.0 * Math.PI));
+        rrTurn.setPosition((rrAngle + Math.PI) / (2.0 * Math.PI));
 
         // --- PRESERVED DEAD-WHEEL TRACKING MATH ---
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
@@ -148,7 +145,8 @@ public class humpProject extends OpMode {
 
         // Telemetry readout
         telemetryM.addData("Horizontal Odometer", xHorizontal);
-        telemetryM.addData("LF Target Angle", Math.toDegrees(lfAngle));
+        telemetryM.addData("LF Target Angle (Deg)", Math.toDegrees(lfAngle));
+        telemetryM.addData("LF Servo Position (0-1)", lfTurn.getPosition());
         telemetryM.update();
     }
 }
