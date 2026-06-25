@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.control.PIDFController;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.BezierPoint;
@@ -18,6 +19,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
@@ -29,8 +31,16 @@ import java.util.function.Supplier;
 @TeleOp(name="redTeleopV4")
 public class redTeleOpV4 extends OpMode {
     private int D;
+    private double offset=0;
+    private Servo Gateservo;
+    private boolean readytoshoot = false;
+    private boolean Open = false;
+    double angle;
 
-    private Pose startPose = new Pose(48, 25, Math.toRadians(90));
+    private boolean Yiscorrect=false;
+    private boolean erroralignment = false;
+    private PIDFController PIDF;
+    private Pose startPose = new Pose(96, 25, Math.toRadians(120));
     private ElapsedTime SleepTimer = new ElapsedTime();
     private DcMotorEx deposit;
     private DcMotor intake;
@@ -77,9 +87,8 @@ public class redTeleOpV4 extends OpMode {
     @Override
 
     public void init() {
-        startPose = startPose.mirror();
 
-
+        PIDF = new PIDFController(new com.pedropathing.control.PIDFCoefficients(1.2,0 , 0, 0));
 
         shooterCalculatons = new ShooterCalculatons();
         follower = Constants.createFollower(hardwareMap);
@@ -91,6 +100,8 @@ public class redTeleOpV4 extends OpMode {
         deposit = hardwareMap.get(DcMotorEx.class, "deposit"); // EH port 1
         deposit.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         deposit.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        Gateservo = hardwareMap.get(Servo.class, "servo");
+
 
         deposit.setDirection(DcMotorSimple.Direction.REVERSE);
         // Tuned vals for P and F
@@ -120,6 +131,7 @@ public class redTeleOpV4 extends OpMode {
 
     @Override
     public void loop() {
+
         SleepTimer.reset();
         //Call this once per loop
         follower.update();
@@ -138,9 +150,9 @@ public class redTeleOpV4 extends OpMode {
 
         // When gamepad-1 right bumper is pressed run intake 1 and 2 motors
         if (gamepad1.left_bumper) {
-            intake.setPower(0.8);
-        } else if (gamepad1.right_bumper) { // When Gamepad-1 left bumper is pressed reverse the intake motor
             intake.setPower(-0.8);
+        } else if (gamepad1.right_bumper) { // When Gamepad-1 left bumper is pressed reverse the intake motor
+            intake.setPower(0.8);
         } else { // if not stop the motor
             intake.setPower(0.0);
         }
@@ -159,8 +171,16 @@ public class redTeleOpV4 extends OpMode {
         }
 
         if (gamepad1.a) {
-            double angle = shooterCalculatons.getthetared(follower.getPose().getX(), follower.getPose().getY());
+            double angle = shooterCalculatons.getthetared(follower.getPose().getX()-(5.5*Math.cos(follower.getPose().getHeading())), follower.getPose().getY()-(5.5*Math.sin(follower.getPose().getHeading())))+90+offset;
             error = angle - Math.toDegrees(follower.getPose().getHeading());
+            if (error > 180) {
+                error = error - 360;
+            }
+            if (error < -180) {
+                error = error + 360;
+            }
+            PIDF.setTargetPosition(error);
+            PIDF.run();
             if (Math.abs(error) < 2) {
 
             }
@@ -180,13 +200,12 @@ public class redTeleOpV4 extends OpMode {
         }
         // When gamepad-2 right trigger is pressed start deposit motor.
         if (gamepad1.right_trigger > 0.1) {
-            autoShooting  = true;
+                RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),false);
         } else if(gamepad1.left_trigger > 0.1) { // else stop the motor
             autoShooting = false;
             RPM = 0;
         }
         if (autoShooting){
-            RPM=shooterCalculatons.autoshoot(follower.getPose().getX(),follower.getPose().getY(),true) -50;
         }
 
         double ticks = shooterCalculatons.rotationsToTicks(RPM);
@@ -196,6 +215,66 @@ public class redTeleOpV4 extends OpMode {
         PIDFCoefficients pidfCoefficients = new PIDFCoefficients(P, 0, 0, F);
         deposit.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, pidfCoefficients);
 
+        if (error!=0 && Math.abs(error)<=2) {
+            erroralignment = true;
+        } else {
+            erroralignment= false;
+        }
+        if (follower.getPose().getY() >= 68 || follower.getPose().getY() <= 35) {
+            Yiscorrect = true;
+        } else {
+            Yiscorrect= false;
+        }
+
+
+        if (Yiscorrect && erroralignment && gamepad1.right_trigger>0.1) {
+            Gateservo.setPosition(0.12);
+        } else if(Yiscorrect&&erroralignment&& gamepad1.right_trigger>0.1){
+            Gateservo.setPosition(0.35);
+        }
+        if (gamepad1.dpad_up) {
+            Gateservo.setPosition(0.35);
+        }
+        else if (gamepad1.dpad_down) {
+            Gateservo.setPosition(0.12);
+        }
+        if(Gateservo.getPosition() == 0.12) {
+            Open = true;
+        } else {
+            Open = false;
+        }
+        if (Gateservo.getPosition() == 0.12 && Yiscorrect && erroralignment) {
+            readytoshoot = true;
+
+        } else {
+            readytoshoot = false;
+        }
+        if (gamepad2.aWasPressed()) {
+            RPM = 3500;
+
+        }
+        if(gamepad2.bWasPressed()) {
+            RPM = 3100;
+        }
+        if (gamepad2.xWasPressed()) {
+            RPM = RPM -50;
+        }
+        if(gamepad2.yWasPressed()) {
+            RPM = RPM + 50;
+        }
+        if(gamepad2.dpad_up) {
+            Gateservo.setPosition(0.12);
+        }
+        if(gamepad2.dpad_down) {
+            Gateservo.setPosition(0.35);
+        }
+        if(gamepad2.dpadLeftWasPressed()) {
+            offset = offset+3;
+        }
+        if(gamepad2.dpadRightWasPressed()) {
+            offset = offset-3;
+        }
+
 
 
         //deposit.setVelocity(getRPM(getDistance(), 35));
@@ -203,23 +282,28 @@ public class redTeleOpV4 extends OpMode {
         //telemetry.addData("Gate Servo Position", servoIntake.getPosition());
         //telemetry.addData("Intake Power Left", intake_2.getPower());
         //telemetry.addData("Intake Power Right", intake_3.getPower());
-        telemetry.addData("Deposit Power", deposit.getPower());
+//        telemetry.addData("Deposit Power", deposit.getPower());
+        telemetry.addData("is gate servo open?",Open );
+        telemetry.addData("Ready to shoot?", readytoshoot);
+        telemetry.addData("erroralignment true?", erroralignment);
+        telemetry.addData("Servo Pos", Gateservo.getPosition());
+        telemetry.addData("is Y correct?", Yiscorrect);
+        telemetry.addData("error", error);
         telemetry.addData("Current X pos", follower.getPose().getX());
         telemetry.addData("Current Y Pos", follower.getPose().getY());
         telemetry.addData("Current Heading", follower.getPose().getHeading());
         telemetry.addData("targetRPM",RPM);
         telemetry.addData("actualRPM",shooterCalculatons.ticksToRotations(deposit.getVelocity()));
-        telemetry.addData("Distance",getDistance());
-        telemetry.addData("Current RPM", getRPM(getDistance(), 35));
+        telemetry.addData("Distance",shooterCalculatons.distanceFromRed(follower.getPose().getX(), follower.getPose().getY()));
         telemetry.addData("blue angle", shooterCalculatons.getthetablue(follower.getPose().getX(), follower.getPose().getY()));
         telemetry.addData("red angle", shooterCalculatons.getthetared(follower.getPose().getX(), follower.getPose().getY()));
-        telemetry.addData("error", error);
 
-        if (gamepad1.dpad_up){
-            autograb = true;
-        } else {
-            autograb = false;
-        }
+
+//        if (gamepad1.dpad_up){
+//            autograb = true;
+//        } else {
+//            autograb = false;
+//        }
 
         if (gamepad1.dpad_right){
             limelight.pipelineSwitch(1);
@@ -270,17 +354,17 @@ public class redTeleOpV4 extends OpMode {
 
             //                 AUTO-TURN LOGIC
 
-            if (Math.abs(tx) > TX_TOLERANCE_DEG) {
-
-                // Proportional control: more error → more turn
-                double turnPower = TURN_KP * tx;
-
-                // Clamp power for safety
-                turnPower = Math.max(-MAX_TURN_POWER,
-                        Math.min(MAX_TURN_POWER, turnPower));
-
-                setTurnPower(turnPower);
-            }
+//            if (Math.abs(tx) > TX_TOLERANCE_DEG) {
+//
+//                // Proportional control: more error → more turn
+//                double turnPower = TURN_KP * tx;
+//
+//                // Clamp power for safety
+//                turnPower = Math.max(-MAX_TURN_POWER,
+//                        Math.min(MAX_TURN_POWER, turnPower));
+//
+//                setTurnPower(turnPower);
+//            }
 
             //               DISTANCE CALCULATION
 
@@ -347,15 +431,15 @@ public class redTeleOpV4 extends OpMode {
         double numerator = (gravityMM*distance*distance);
         double denominator = (2* Math.pow(Math.cos(thetaRadian), 2)*(distance*Math.tan(thetaRadian)-targetHeight));
 
-        telemetry.addData("target Height", targetHeight);
-        telemetry.addData("Numerator", numerator);
-        telemetry.addData("Denominator", denominator);
+//        telemetry.addData("target Height", targetHeight);
+//        telemetry.addData("Numerator", numerator);
+//        telemetry.addData("Denominator", denominator);
 
         if (denominator <=0) return 0;
 
         double velocity = Math.sqrt( numerator / denominator);
 
-        telemetry.addData("velocity", velocity);
+//        telemetry.addData("velocity", velocity);
 
         double flywheelRadius = 4.8;
         return (60*velocity) / (2*Math.PI*flywheelRadius);

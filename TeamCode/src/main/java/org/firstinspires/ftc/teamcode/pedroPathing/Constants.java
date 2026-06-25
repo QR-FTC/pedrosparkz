@@ -47,8 +47,8 @@ public class Constants {
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
     public static PinpointConstants localizerConstants = new PinpointConstants()
-            .strafePodX(-3.5)
-            .forwardPodY(1.75)
+            .strafePodX(-4.5)
+            .forwardPodY(-1.75)
 //            .forwardPodY(2)
 //            .strafePodX(0)
 
