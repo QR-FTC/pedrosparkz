@@ -27,6 +27,7 @@ public class humpProject extends OpMode {
     private static Follower follower;
     IMU imu;
 
+
     // --- HARDWARE ENCODER DEFINITION ---
     private DcMotorEx deadWheel;
 
@@ -39,6 +40,8 @@ public class humpProject extends OpMode {
     private double lastDistance = 0.0;
     private double xHorizontal = 0.0;
 
+
+    
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
