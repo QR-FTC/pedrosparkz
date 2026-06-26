@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo; // Changed from CRServo
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -27,21 +28,26 @@ public class humpProject extends OpMode {
     private static Follower follower;
     IMU imu;
 
+    // --- SWERVE HARDWARE DEFINITIONS ---
+    // Drive Motors
+    private DcMotorEx lfDrive, rfDrive, lrDrive, rrDrive;
 
-    // --- HARDWARE ENCODER DEFINITION ---
+    // --- CHANGED TO REGULAR SERVOS ---
+    private Servo lfTurn, rfTurn, lrTurn, rrTurn;
+
+    // Robot Geometry Constants
+    private final double L = 12.0;
+    private final double W = 12.0;
+    private final double R = Math.hypot(L, W);
+
+    // --- HARDWARE ODOMETER ENCODER ---
     private DcMotorEx deadWheel;
-
-    // Conversion Factor: (Wheel Diameter * PI) / Ticks Per Rev
-    // (Example assumes a 32mm / 1.26" tracking wheel and a 2000 count encoder)
     private final double TICKS_TO_INCHES = (1.26 * Math.PI) / 2000.0;
 
-    // These start at 0.0 on initialization
     private double currentDistance = 0.0;
     private double lastDistance = 0.0;
     private double xHorizontal = 0.0;
 
-
-    
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
@@ -60,8 +66,19 @@ public class humpProject extends OpMode {
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD));
         imu.initialize(parameters);
 
-        // --- MAP THE ENCODER HERE ---
-        // Replace "par" with whatever name you gave your tracking wheel encoder pin in your hardware configuration
+        // --- MAP SWERVE MOTORS ---
+        lfDrive = hardwareMap.get(DcMotorEx.class, "lfDrive");
+        rfDrive = hardwareMap.get(DcMotorEx.class, "rfDrive");
+        lrDrive = hardwareMap.get(DcMotorEx.class, "lrDrive");
+        rrDrive = hardwareMap.get(DcMotorEx.class, "rrDrive");
+
+        // --- MAP STANDARD SERVOS ---
+        lfTurn = hardwareMap.get(Servo.class, "lfTurn");
+        rfTurn = hardwareMap.get(Servo.class, "rfTurn");
+        lrTurn = hardwareMap.get(Servo.class, "lrTurn");
+        rrTurn = hardwareMap.get(Servo.class, "rrTurn");
+
+        // --- MAP THE DEAD-WHEEL ---
         deadWheel = hardwareMap.get(DcMotorEx.class, "par");
         deadWheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         deadWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -74,28 +91,64 @@ public class humpProject extends OpMode {
 
     @Override
     public void loop() {
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
         follower.update();
 
+        // 1. Capture joystick movements
+        double stripeFwd = -gamepad1.left_stick_y;
+        double stripeStrafe = gamepad1.left_stick_x;
+        double rotationKey = gamepad1.right_stick_x;
+
+        // 2. Swerve Kinematics Equations
+        double A = stripeStrafe - rotationKey * (L / R);
+        double B = stripeStrafe + rotationKey * (L / R);
+        double C = stripeFwd - rotationKey * (W / R);
+        double D = stripeFwd + rotationKey * (W / R);
+
+        // Calculate Speeds
+        double lfSpeed = Math.hypot(B, C);
+        double rfSpeed = Math.hypot(B, D);
+        double lrSpeed = Math.hypot(A, C);
+        double rrSpeed = Math.hypot(A, D);
+
+        // Calculate Target Steering Angles (Outputs range from -Math.PI to Math.PI)
+        double lfAngle = Math.atan2(B, C);
+        double rfAngle = Math.atan2(B, D);
+        double lrAngle = Math.atan2(A, C);
+        double rrAngle = Math.atan2(A, D);
+
+        // Normalize speeds if any motor calculation exceeds 1.0
+        double maxSpeed = Math.max(Math.max(lfSpeed, rfSpeed), Math.max(lrSpeed, rrSpeed));
+        if (maxSpeed > 1.0) {
+            lfSpeed /= maxSpeed; rfSpeed /= maxSpeed; lrSpeed /= maxSpeed; rrSpeed /= maxSpeed;
+        }
+
+        // 3. Assign Power Outputs to Drive Motors
+        lfDrive.setPower(lfSpeed);
+        rfDrive.setPower(rfSpeed);
+        lrDrive.setPower(lrSpeed);
+        rrDrive.setPower(rrSpeed);
+
+        // --- CHANGED: CONVERT RADIANS TO SERVO POSITION (0.0 to 1.0) ---
+        // Formula maps [-PI, PI] cleanly down to a [0.0, 1.0] fractional positional spectrum
+        lfTurn.setPosition((lfAngle + Math.PI) / (2.0 * Math.PI));
+        rfTurn.setPosition((rfAngle + Math.PI) / (2.0 * Math.PI));
+        lrTurn.setPosition((lrAngle + Math.PI) / (2.0 * Math.PI));
+        rrTurn.setPosition((rrAngle + Math.PI) / (2.0 * Math.PI));
+
+        // --- PRESERVED DEAD-WHEEL TRACKING MATH ---
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         double pitchRad = orientation.getPitch(AngleUnit.RADIANS);
 
-        // --- OVERWRITE THE INITIAL 0.0 WITH THE REAL LIVE VALUE ---
-        // Every frame, this pulls raw data from your tracking pod and changes currentDistance
         currentDistance = deadWheel.getCurrentPosition() * TICKS_TO_INCHES;
-
-        // Now deltaWheel will not be 0.0 because currentDistance changes as the robot moves!
         double deltaWheel = currentDistance - lastDistance;
         double deltaHorizontal = deltaWheel * Math.cos(pitchRad);
         xHorizontal += deltaHorizontal;
-
-        // Hand off the updated distance for the next frame calculation
         lastDistance = currentDistance;
 
-        // Verify the numbers are fluctuating live on driver hub telemetry
-        telemetryM.addData("Raw Encoder Ticks", deadWheel.getCurrentPosition());
-        telemetryM.addData("Current Computed Distance", currentDistance);
-        telemetryM.addData("X Horizontal Odometer", xHorizontal);
+        // Telemetry readout
+        telemetryM.addData("Horizontal Odometer", xHorizontal);
+        telemetryM.addData("LF Target Angle (Deg)", Math.toDegrees(lfAngle));
+        telemetryM.addData("LF Servo Position (0-1)", lfTurn.getPosition());
         telemetryM.update();
     }
 }
