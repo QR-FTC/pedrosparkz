@@ -85,7 +85,9 @@ public class humpProject extends OpMode {
     }
 
     @Override
-    public void start() {}
+    public void start() {
+        follower.startTeleopDrive();
+    }
 
     @Override
     public void loop() {
