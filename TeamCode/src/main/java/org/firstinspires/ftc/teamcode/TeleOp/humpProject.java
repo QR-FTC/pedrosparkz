@@ -37,6 +37,8 @@ public class humpProject extends OpMode {
 
     // Robot Geometry Constants
     private final double L = 12.0;
+    public Pose oldpose = follower.getPose();
+    public Pose newpose;
     private final double W = 12.0;
     private final double R = Math.hypot(L, W);
 
@@ -47,6 +49,9 @@ public class humpProject extends OpMode {
     private double currentDistance = 0.0;
     private double lastDistance = 0.0;
     private double xHorizontal = 0.0;
+    public double collectedDistance = 0.0;
+    public double changedDistance;
+
 
     @Override
     public void init() {
@@ -144,6 +149,14 @@ public class humpProject extends OpMode {
         double deltaHorizontal = deltaWheel * Math.cos(pitchRad);
         xHorizontal += deltaHorizontal;
         lastDistance = currentDistance;
+        collectedDistance+=deltaWheel;
+        changedDistance=collectedDistance-xHorizontal;
+
+
+
+
+
+
 
         // Telemetry readout
         telemetryM.addData("Horizontal Odometer", xHorizontal);
