@@ -1,0 +1,100 @@
+package org.firstinspires.ftc.teamcode.Layers.Physical;
+package org.firstinspires.ftc.teamcode.TeleOp;
+
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.Layers.Physical.dtMotor;
+
+// Import the official goBILDA Pinpoint driver
+import org.firstinspires.ftc.teamcode.GoBildaPinpointDriver;
+
+public class MecanumDriveEncoder extends OpMode {
+    private dtMotor frontLeft;
+    private dtMotor frontRight;
+    private dtMotor backLeft;
+    private dtMotor backRight;
+
+    // Replace deadwheels with the Pinpoint computer
+    private GoBildaPinpointDriver pinpoint;
+
+    @Override
+    public void init() {
+        frontLeft = new dtMotor(telemetry, hardwareMap, "frontLeft");
+        frontRight = new dtMotor(telemetry, hardwareMap,"frontRight");
+        backLeft = new dtMotor(telemetry, hardwareMap, "backLeft");
+        backRight = new dtMotor(telemetry, hardwareMap, "backRight");
+
+        // Initialize Pinpoint (Ensure configured name in the hardware map is "pinpoint")
+        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+
+        /* * Pinpoint Configuration Setup
+         */
+        // 1. Set the physical offsets of your pods relative to the robot's center of rotation (in mm)
+        // Adjust these numbers based on where your pods are mounted!
+        pinpoint.setOffsets(-50.0, 12.0);
+
+        // 2. Define which hardware pods you are using
+        pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+        // Alternatively use .goBILDA_SWINGARM_POD if you have swingarm pods
+
+        // 3. Set directions (FORWARD or REVERSE)
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
+                GoBildaPinpointDriver.EncoderDirection.FORWARD);
+
+        // Reset positions to 0 at startup
+        pinpoint.resetPosAndIMU();
+
+        telemetry.addData("Status", "Pinpoint Initialized");
+    }
+
+    @Override
+    public void loop() {
+        // Crucial: Update the pinpoint hardware data at the very start of every loop cycle
+        pinpoint.update();
+
+        double forward = -gamepad1.left_stick_y;
+        double strafe = gamepad1.left_stick_x;
+        double turn = gamepad1.right_stick_x;
+
+        // Calculate raw powers
+        double frontLeftPower = forward + strafe + turn;
+        double backLeftPower = forward - strafe + turn;
+        double frontRightPower = forward - strafe - turn;
+        double backRightPower = forward + strafe - turn;
+
+        // Normalize motor powers
+        double max = Math.max(Math.abs(frontLeftPower), Math.abs(backLeftPower));
+        max = Math.max(max, Math.abs(frontRightPower));
+        max = Math.max(max, Math.abs(backRightPower));
+
+        if (max > 1.0) {
+            frontLeftPower /= max;
+            backLeftPower /= max;
+            frontRightPower /= max;
+            backRightPower /= max;
+        }
+
+        // Assign powers to motors
+        frontLeft.setPower(frontLeftPower);
+        backLeft.setPower(backLeftPower);
+        frontRight.setPower(frontRightPower);
+        backRight.setPower(backRightPower);
+
+        // Grab the estimated global position (X, Y, and Heading)
+        Pose2D pos = pinpoint.getPosition();
+
+        // Pinpoint Location Telemetry
+        telemetry.addData("X Position (in)", pos.getX(DistanceUnit.INCH));
+        telemetry.addData("Y Position (in)", pos.getY(DistanceUnit.INCH));
+        telemetry.addData("Heading (deg)", pos.getHeading(AngleUnit.DEGREES));
+
+        // Optional: Status and raw velocities
+        telemetry.addData("Status", pinpoint.getDeviceStatus());
+        telemetry.addData("X Velocity", pinpoint.getVelocity().getX(DistanceUnit.INCH));
+        telemetry.addData("Y Velocity", pinpoint.getVelocity().getY(DistanceUnit.INCH));
+
+        telemetry.update();
+    }
+}
