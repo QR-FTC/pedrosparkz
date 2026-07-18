@@ -9,7 +9,7 @@ public class layermotor {
 
     public void layers(Telemetry telemetry, HardwareMap hardwareMap, String name) {
 
-       motor=  hardwareMap.get(DcMotor.class, name);
+        motor = hardwareMap.get(DcMotor.class, name);
 
         this.telemetry = telemetry;
     }
@@ -19,8 +19,9 @@ public class layermotor {
 
     }
 
-    public void stopMotor(){
+    public void stopMotor() {
         motor.setPower(0);
     }
-
 }
+
+
