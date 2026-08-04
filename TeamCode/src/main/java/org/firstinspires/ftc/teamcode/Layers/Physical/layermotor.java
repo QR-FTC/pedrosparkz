@@ -9,48 +9,32 @@ public class layermotor {
     DcMotorEx motor;
     Telemetry telemetry;
 
-    private static final double TICKS_PER_REV = 2786.2;
+    final int TICKS = 28;
+    double ratio;
 
-    public layermotor(Telemetry telemetry, HardwareMap hardwareMap, String name) {
+    public layermotor(Telemetry telemetry, HardwareMap hardwareMap, String name, double ratio) {
 
-       motor=  hardwareMap.get(DcMotorEx.class, name);
-
-        this.telemetry = telemetry;
+       motor =  hardwareMap.get(DcMotorEx.class, name);
+       motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+       this.ratio = ratio;
+       this.telemetry = telemetry;
     }
 
-    public void setPower(double power) {
-        motor.setPower(power);
-
-
-
+    public void run_using_position( double rotation) {
+        motor.setTargetPosition((int) (rotation * ratio * TICKS));
+        motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        motor.setPower(0.5);
 
     }
-    public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior){
-        motor.setZeroPowerBehavior(zeroPowerBehavior);
+    public void telemetry() {
+        telemetry.addData("Motor Position", motor.getCurrentPosition());
+        double rotations = motor.getCurrentPosition() / (ratio * TICKS);
+        telemetry.addData("Motor Rotations",rotations);
+        telemetry.update();
     }
 
-
-
-
-    public double getValue(){
-        return motor.getPower();
-    }
-
-
-    public void setMode(DcMotor.RunMode mode){
-        motor.setMode(mode);
-    }
-    public void resetEncoder(){
-        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    }
-
-
-
-
-
-
-    public void stopMotor(){
-        motor.setPower(0);
+    public boolean isBusy(){
+        return motor.isBusy();
     }
 
 }

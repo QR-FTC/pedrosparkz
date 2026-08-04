@@ -7,7 +7,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 
- // Ensure this is in your teamcode directory
+
 
 
 public class MecanumDriveEncoder {
@@ -85,7 +85,7 @@ public class MecanumDriveEncoder {
         telemetry.addData("Pinpoint Status", pinpoint.getDeviceStatus());
     }
 
-    // Optional: Getter if you need to fetch the Pose coordinates outside this class
+
     public Pose2D getPose() {
         return pinpoint.getPosition();
     }
