@@ -7,39 +7,43 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 @TeleOp(name = "Limelight Largest Cluster Tracker", group = "Vision")
 public class balltracking extends OpMode {
-
     private Limelight3A limelight;
     private Follower follower;
-
-    // ----- Tuning constants -----
-    private static final double MIN_TA            = 0.5;  // ignore blobs smaller than this (noise)
-    private static final double TX_TOLERANCE_DEG  = 1.0;  // "close enough to centered" dead-band
-    private static final double TURN_KP           = 0.02; // proportional turn gain
-    private static final double MAX_TURN_POWER    = 0.35; // safety cap on turn power
-    private static final double APPROACH_POWER    = 0.2;  // forward power while chasing
-    private static final double CLUSTER_GAP_DEG   = 10.0; // balls farther apart than this = different clusters
-
+    private static final double txToleranceDeg = 1.0;
+    private static final double turnKp = 0.02;
+    private static final double maxTurnPower = 0.35;
+    private static final double clusterGapDeg = 8.0;
+    private static final double scanTurnPower = 0.3;
+    private static final double headingKp = 0.6;
+    private static final double headingTolRad = Math.toRadians(4);
+    private static final int lostFramesMax = 10;
+    private static final int pipeline = 3;
+    private enum State { SCANNING, GOTO_BEST, CHASING }
+    private State state = State.SCANNING;
+    private double lastHeading;
+    private double accumulatedRotation;
+    private int scanBestCount;
+    private double scanBestHeading;
+    private boolean scanHasBest;
+    private int lostFrames;
     private boolean autograb = false;
-    
+
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(72, 72, Math.toRadians(90)));
         follower.update();
-
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.pipelineSwitch(3);   // force pipeline 1
-
+        limelight.pipelineSwitch(pipeline);
         telemetry.addLine("Limelight Largest Cluster Tracker Ready");
+        telemetry.addData("Pipeline", pipeline);
         telemetry.update();
     }
 
@@ -51,60 +55,111 @@ public class balltracking extends OpMode {
 
     @Override
     public void loop() {
-        // Toggle auto-grab on/off with the d-pad
         if (gamepad1.dpadDownWasPressed()) {
             autograb = true;
+            startScanning();
         } else if (gamepad1.dpadUpWasPressed()) {
             autograb = false;
         }
-
         follower.update();
-
+        telemetry.addData("Mode", autograb ? "AUTO-GRAB" : "DRIVER");
         if (autograb) {
             runAutoGrab();
         } else {
-            follower.setTeleOpDrive(
-                    -gamepad1.left_stick_y,
-                    -gamepad1.left_stick_x,
-                    -gamepad1.right_stick_x);
+            follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
+            telemetry.addLine("Driver control (d-pad down = auto-grab)");
         }
-
-        telemetry.addData("Mode", autograb ? "AUTO-GRAB" : "DRIVER");
         telemetry.update();
     }
 
-    /** Steers toward the center of the cluster that contains the most balls. */
-    private void runAutoGrab() {
-        LLResult result = limelight.getLatestResult();
-        if (result == null || !result.isValid()) {
-            telemetry.addLine("No valid result");
-            follower.setTeleOpDrive(APPROACH_POWER, 0, 0);
-            return;
-        }
+    private void startScanning() {
+        state = State.SCANNING;
+        lastHeading = follower.getPose().getHeading();
+        accumulatedRotation = 0;
+        scanBestCount = 0;
+        scanHasBest = false;
+        lostFrames = 0;
+    }
 
-        // 1) Collect the horizontal angle of every real ball, sorted left -> right
-        List<Double> ballAngles = new ArrayList<>();
-        for (LLResultTypes.ColorResult ball : result.getColorResults()) {
-            if (ball.getTargetArea() >= MIN_TA) {
-                ballAngles.add(ball.getTargetXDegrees()); // + = right of center
+    private void runAutoGrab() {
+        ClusterInfo cluster = findLargestCluster(limelight.getLatestResult());
+        double heading = follower.getPose().getHeading();
+        telemetry.addData("State", state);
+        telemetry.addData("Heading (deg)", "%.1f", Math.toDegrees(heading));
+        switch (state) {
+            case SCANNING: {
+                follower.setTeleOpDrive(0, 0, scanTurnPower);
+                accumulatedRotation += Math.abs(angleWrap(heading - lastHeading));
+                lastHeading = heading;
+                if (cluster != null && cluster.count > scanBestCount) {
+                    scanBestCount = cluster.count;
+                    scanBestHeading = angleWrap(heading - Math.toRadians(cluster.tx));
+                    scanHasBest = true;
+                }
+                telemetry.addData("Scan (deg)", "%.0f / 360", Math.toDegrees(accumulatedRotation));
+                telemetry.addData("Best cluster size", scanBestCount);
+                if (accumulatedRotation >= 2 * Math.PI) {
+                    if (scanHasBest) {
+                        state = State.GOTO_BEST;
+                    } else {
+                        accumulatedRotation = 0;
+                    }
+                }
+                break;
+            }
+            case GOTO_BEST: {
+                double error = angleWrap(scanBestHeading - heading);
+                if (Math.abs(error) <= headingTolRad) {
+                    follower.setTeleOpDrive(0, 0, 0);
+                    state = State.CHASING;
+                } else {
+                    follower.setTeleOpDrive(0, 0, clamp(-headingKp * error, maxTurnPower));
+                }
+                telemetry.addData("Heading error (deg)", "%.1f", Math.toDegrees(error));
+                break;
+            }
+            case CHASING: {
+                if (cluster == null) {
+                    lostFrames++;
+                    follower.setTeleOpDrive(0, 0, 0);
+                    telemetry.addData("Lost frames", lostFrames);
+                    if (lostFrames > lostFramesMax) {
+                        startScanning();
+                    }
+                    break;
+                }
+                lostFrames = 0;
+                double turnPower = 0;
+                boolean centered = Math.abs(cluster.tx) <= txToleranceDeg;
+                if (!centered) {
+                    turnPower = clamp(turnKp * cluster.tx, maxTurnPower);
+                }
+                follower.setTeleOpDrive(0.2, 0, turnPower);
+                telemetry.addData("Balls in view", cluster.totalBalls);
+                telemetry.addData("Cluster size", cluster.count);
+                telemetry.addData("Cluster angle (tx)", "%.1f", cluster.tx);
+                telemetry.addData("Aim", centered ? "CENTERED" : (cluster.tx > 0 ? "RIGHT" : "LEFT"));
+                telemetry.addData("Turn power", "%.3f", turnPower);
+                break;
             }
         }
-        Collections.sort(ballAngles);
+    }
 
-        if (ballAngles.isEmpty()) {
-            telemetry.addLine("No balls detected");
-            follower.setTeleOpDrive(APPROACH_POWER, 0, 0);
-            return;
+    private ClusterInfo findLargestCluster(LLResult result) {
+        if (result == null || !result.isValid()) return null;
+        List<Double> angles = new ArrayList<>();
+        for (LLResultTypes.ColorResult ball : result.getColorResults()) {
+            angles.add(ball.getTargetXDegrees());
         }
-
-        // 2) Walk left-to-right; start a new cluster whenever there's a big gap
-        int bestCount = 0, bestStart = 0;          // biggest cluster found so far
-        int runCount  = 1, runStart  = 0;          // cluster we're currently building
-        for (int i = 1; i < ballAngles.size(); i++) {
-            if (ballAngles.get(i) - ballAngles.get(i - 1) <= CLUSTER_GAP_DEG) {
-                runCount++;                         // same cluster
+        if (angles.isEmpty()) return null;
+        Collections.sort(angles);
+        int bestStart = 0, bestCount = 1;
+        int runStart = 0, runCount = 1;
+        for (int i = 1; i < angles.size(); i++) {
+            if (angles.get(i) - angles.get(i - 1) <= clusterGapDeg) {
+                runCount++;
             } else {
-                runCount = 1;                       // gap -> new cluster
+                runCount = 1;
                 runStart = i;
             }
             if (runCount > bestCount) {
@@ -112,25 +167,31 @@ public class balltracking extends OpMode {
                 bestStart = runStart;
             }
         }
-
-        // 3) Aim at the average angle of the balls in that biggest cluster
         double sum = 0;
         for (int i = bestStart; i < bestStart + bestCount; i++) {
-            sum += ballAngles.get(i);
+            sum += angles.get(i);
         }
-        double clusterTx = sum / bestCount;
+        return new ClusterInfo(sum / bestCount, bestCount, angles.size());
+    }
 
-        // 4) Proportional turn toward the cluster, with dead-band + clamp
-        double turnPower = 0;
-        if (Math.abs(clusterTx) > TX_TOLERANCE_DEG) {
-            turnPower = TURN_KP * clusterTx;
-            turnPower = Math.max(-MAX_TURN_POWER, Math.min(MAX_TURN_POWER, turnPower));
+    private static class ClusterInfo {
+        final double tx;
+        final int count;
+        final int totalBalls;
+        ClusterInfo(double tx, int count, int totalBalls) {
+            this.tx = tx;
+            this.count = count;
+            this.totalBalls = totalBalls;
         }
-        follower.setTeleOpDrive(APPROACH_POWER, 0, turnPower);
+    }
 
-        telemetry.addData("Total balls", ballAngles.size());
-        telemetry.addData("Largest cluster size", bestCount);
-        telemetry.addData("Cluster angle (tx)", clusterTx);
-        telemetry.addData("Turn power", turnPower);
+    private double clamp(double value, double limit) {
+        return Math.max(-limit, Math.min(limit, value));
+    }
+
+    private double angleWrap(double radians) {
+        while (radians > Math.PI) radians -= 2 * Math.PI;
+        while (radians < -Math.PI) radians += 2 * Math.PI;
+        return radians;
     }
 }

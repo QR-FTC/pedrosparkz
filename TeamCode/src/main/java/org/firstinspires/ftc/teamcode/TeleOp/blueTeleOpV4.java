@@ -64,23 +64,11 @@ public class blueTeleOpV4 extends OpMode {
     private DcMotor backRight;
     private static final double LIMELIGHT_MOUNT_ANGLE_DEG = 25.0;
     private PIDFController PIDF;
-
-    // Height of Limelight lens from the floor (inches)
     private static final double LIMELIGHT_LENS_HEIGHT_IN = 10F;
-
-    // Height of the target from the floor (inches)
     private static final double TARGET_HEIGHT_IN = 2.5;
-
-    // Reject tiny blobs
     private static final double MIN_TA = 0.5;
-
-    // How close tx must be to zero before we stop turning
     private static final double TX_TOLERANCE_DEG = 1.;
-
-    // Proportional turning gain
     private static final double TURN_KP = 0.02;
-
-    // Safety cap on turning power
     private static final double MAX_TURN_POWER = 0.35;
     boolean autograb = false;
 
@@ -125,9 +113,6 @@ public class blueTeleOpV4 extends OpMode {
     @Override
 
     public void start() {
-        //The parameter controls whether the Follower should use break mode on the motors (using it is recommended).
-        //In order to use float mode, add .useBrakeModeInTeleOp(true); to your Drivetrain Constants in Constant.java (for Mecanum)
-        //If you don't pass anything in, it uses the default (false)
         follower.startTeleopDrive();
         limelight.start();
     }
@@ -453,4 +438,3 @@ public double getDistance()
     }
 
 }
-
