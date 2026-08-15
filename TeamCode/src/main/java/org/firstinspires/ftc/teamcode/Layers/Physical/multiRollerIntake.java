@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.Layers.Physical;
+import android.text.method.Touch;
+
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Layers.Physical.hardwareMapFile;
@@ -10,12 +13,15 @@ import org.firstinspires.ftc.teamcode.Layers.Physical.advancedcrServo;
 
 
 public class multiRollerIntake {
-    hardwareMapFile hardwareMapFile0;
+    private hardwareMapFile hardwareMapFile0;
 
-    CRServo frontRollerCRservo;
-    CRServo backRollerCRservo;
-    advancedcrServo frontRollerServo;
-    advancedcrServo backRollerServo;
+    private CRServo frontRollerCRservo;
+    private CRServo backRollerCRservo;
+    private advancedcrServo frontRollerServo;
+    private advancedcrServo backRollerServo;
+
+    private TouchSensor sensor;
+
 
 
     public multiRollerIntake() { }
@@ -33,6 +39,10 @@ public class multiRollerIntake {
     public void intake() {
         frontRollerServo.setPower(1);
         backRollerServo.setPower(1);
+    }
+
+    public boolean intakeTouchSensorCheck() {
+        return sensor.isPressed();
     }
 
     public void outtake() {
