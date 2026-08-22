@@ -16,15 +16,15 @@ import java.util.List;
 public class balltracking extends OpMode {
     private Limelight3A limelight;
     private Follower follower;
-    private static final double txToleranceDeg = 1.0;
-    private static final double turnKp = 0.02;
-    private static final double maxTurnPower = 0.35;
-    private static final double clusterGapDeg = 8.0;
-    private static final double scanTurnPower = 0.3;
-    private static final double headingKp = 0.6;
-    private static final double headingTolRad = Math.toRadians(4);
-    private static final int lostFramesMax = 10;
-    private static final int pipeline = 3;
+    private double txToleranceDeg = 1.0;
+    private double turnKp = 0.02;
+    private double maxTurnPower = 0.35;
+    private double clusterGapDeg = 8.0;
+    private double scanTurnPower = 0.3;
+    private double headingKp = 0.6;
+    private double headingTolRad = Math.toRadians(4);
+    private int lostFramesMax = 10;
+    private int pipeline = 3;
     private enum State { SCANNING, GOTO_BEST, CHASING }
     private State state = State.SCANNING;
     private double lastHeading;
@@ -34,7 +34,6 @@ public class balltracking extends OpMode {
     private boolean scanHasBest;
     private int lostFrames;
     private boolean autograb = false;
-
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
@@ -46,13 +45,11 @@ public class balltracking extends OpMode {
         telemetry.addData("Pipeline", pipeline);
         telemetry.update();
     }
-
     @Override
     public void start() {
         limelight.start();
         follower.startTeleopDrive();
     }
-
     @Override
     public void loop() {
         if (gamepad1.dpadDownWasPressed()) {
@@ -71,7 +68,6 @@ public class balltracking extends OpMode {
         }
         telemetry.update();
     }
-
     private void startScanning() {
         state = State.SCANNING;
         lastHeading = follower.getPose().getHeading();
@@ -80,7 +76,6 @@ public class balltracking extends OpMode {
         scanHasBest = false;
         lostFrames = 0;
     }
-
     private void runAutoGrab() {
         ClusterInfo cluster = findLargestCluster(limelight.getLatestResult());
         double heading = follower.getPose().getHeading();
@@ -144,7 +139,6 @@ public class balltracking extends OpMode {
             }
         }
     }
-
     private ClusterInfo findLargestCluster(LLResult result) {
         if (result == null || !result.isValid()) return null;
         List<Double> angles = new ArrayList<>();
@@ -173,7 +167,6 @@ public class balltracking extends OpMode {
         }
         return new ClusterInfo(sum / bestCount, bestCount, angles.size());
     }
-
     private static class ClusterInfo {
         final double tx;
         final int count;
@@ -184,11 +177,9 @@ public class balltracking extends OpMode {
             this.totalBalls = totalBalls;
         }
     }
-
     private double clamp(double value, double limit) {
         return Math.max(-limit, Math.min(limit, value));
     }
-
     private double angleWrap(double radians) {
         while (radians > Math.PI) radians -= 2 * Math.PI;
         while (radians < -Math.PI) radians += 2 * Math.PI;
