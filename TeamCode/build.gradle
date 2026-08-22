@@ -27,5 +27,8 @@ dependencies {
     implementation project(':FtcRobotController')
     implementation 'dev.nextftc:ftc:1.1.0'
     implementation 'dev.nextftc:hardware:1.1.0' // If you would like to use the hardware module
+<<<<<<< HEAD
 
+=======
+>>>>>>> 13cc5671353bc081df149ede5969de0d0f5cf7d6
 }
